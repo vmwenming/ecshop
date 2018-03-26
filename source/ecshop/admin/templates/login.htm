@@ -72,10 +72,10 @@ function get_certificate(){
 </script>
 </head>
 <body style="height: 100%;padding: 0">
-{if !$certi.passport_uid}
+{if !$certi.certificate_id}
 <!--云起激活系统面板-->
 <div class="panel-hint panel-icloud" id="panelCloud">
-  <!-- <div class="panel-cross"><span onclick="btnCancel(this)">Ｘ</span></div> -->
+  <div class="panel-cross"><span onclick="btnCancel(this)">Ｘ</span></div>
   <div class="panel-title">
     <span class="tit">您需要激活系统</span>
     <p>用云起账号激活您的系统，享受物流查询，天工收银，手机短信等更多应用和服务</p>
@@ -113,7 +113,7 @@ function get_certificate(){
       </div>
     </div>-->
     <div class="top-ibg-wrap">
-      <a href="{$yunqi_ad_link}" target="_blank" class="top-ibg-480600"></a>
+      <a style="background: url({$yunqi_ad_link}) no-repeat center;" href="{$yunqi_ad_url}" target="_blank" class="top-ibg-480600"></a>
     </div>
     <div class="z-bd">
     <div class="message">{$login_err}</div>
@@ -224,15 +224,6 @@ function get_certificate(){
   var loginPanel = document.getElementById('loginPanel');
   var oldLogin  = loginPanel.innerHTML;
   var oldElseTxt = elsePanel.getElementsByTagName('p')[0].innerHTML;
-  var is_active = "{$certi.passport_uid}";
-  /* 未激活站点登录后台必须先激活 */
-  if (!is_active) {
-    loginPanel.classList.add('cloud');
-    elsePanel.classList.add('ecshop');
-    loginPanel.innerHTML= dom;
-    elsePanel.getElementsByTagName('p')[0].innerHTML = '{$lang.ecshop_account}';
-    get_certificate();
-  }
 
   cloudLogin.onclick = function(){
     loginTab();

@@ -9,7 +9,6 @@ use App\Helper\XXTEA;
 use App\Services\Cloud\Client;
 use App\Services\QiNiu\QiNiu;
 use App\Services\Other\JSSDK;
-use App\Services\Shopex\Authorize;
 
 class Configs extends BaseModel
 {
@@ -21,11 +20,12 @@ class Configs extends BaseModel
 
     public  $timestamps   = true;
 
+
     public static function getList()
     {
         $data = self::where('status', 1)->get();
         $config = ['config' => self::formatConfig($data), 'feature' => Features::getList(), 'platform' => self::getApplicationPlatform()];
-        return self::formatBody(['data' => base64_encode(XXTEA::encrypt($config, 'getprogname()'))]);
+        return self::formatBody(['data' => base64_encode(XXTEA::encrypt($config, 'getprogname()'))]);   
     }
 
     private static function getApplicationPlatform()
@@ -93,44 +93,27 @@ class Configs extends BaseModel
 
     private static function formatConfig($data)
     {
-        $body = null;
+       $body = null;
         foreach ($data as $value) {
             $arr = json_decode($value->config, true);
 
-	        //qiniu格式化
+	    //qiniu格式化
             if( $value->code == 'qiniu'){
-                if (!empty($value->config)) {
-                    $qiniu = new QiNiu($arr['app_key'], $arr['secret_key']);
-                    unset($arr['app_key']);
-                    unset($arr['secret_key']);
-                    $arr['token'] = $qiniu->uploadToken(array('scope' => $arr['bucket']));
-                }
+                $qiniu = new QiNiu($arr['app_key'], $arr['secret_key']);
+                unset($arr['app_key']);
+                unset($arr['secret_key']);
+                $arr['token'] = $qiniu->uploadToken(array('scope' => $arr['bucket']));
             }
-
             //wxpay.web jssdk
             if( $value->code == 'wxpay.web' && $value->status){
-                if (!empty($value->config)) {
-                    $jssdk = new JSSDK($arr['app_id'], $arr['app_secret']);
-                    $arr = $jssdk->GetSignPackage();
-                }
+                $jssdk = new JSSDK($arr['app_id'], $arr['app_secret']);
+                $arr = $jssdk->GetSignPackage();
             }
 
             if(is_array($arr)){
                 $body[$value->code] = $arr;
             }
-        } 
-
-        $body['authorize'] = false;
-
-        $response = Authorize::info();    
-        if ($response['result'] == 'success') 
-        {
-            // 旗舰版授权...
-            if ($response['info']['authorize_code'] == 'NDE') 
-            {
-                $body['authorize'] = true;
-            }
-        }       
+        }        
 
         //安全处理
         unset($body['alipay.app']);

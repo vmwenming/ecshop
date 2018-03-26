@@ -118,7 +118,7 @@ class phpwind6 extends integrate
         if (empty($username))
         {
             $time = time() - 3600;
-            setcookie($cookie_name, '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($cookie_name, '', $time, $this->cookie_path, $this->cookie_domain);
         }
         else
         {
@@ -134,7 +134,7 @@ class phpwind6 extends integrate
 
             $auto_login_key = $this->code_string($row['user_id']."\t".$salt."\t".$row['safecv'], 'ENCODE');
 
-            setcookie($cookie_name, $auto_login_key, time()+3600*24*30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($cookie_name, $auto_login_key, time()+3600*24*30, $this->cookie_path, $this->cookie_domain);
         }
     }
 

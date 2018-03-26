@@ -85,9 +85,6 @@
 
 			$scope.selectedGoods.push(card_good);
 		}
-		else{
-			return;
-		}
 
 		_reloadConsignee();
 		_reloadScore();
@@ -270,14 +267,11 @@
 			API.order
 				.price(params)
 				.then(function (priceInfo) {
-					if(priceInfo){
-						$scope.priceInfo = priceInfo;
-						$scope.all_discount = priceInfo.discount_price;
-						for(var promo in priceInfo.promos){
-							$scope.all_discount += parseFloat(priceInfo.promos[promo].price);
-						}							
+					$scope.priceInfo = priceInfo;
+					$scope.all_discount = priceInfo.discount_price;
+					for(var promo in priceInfo.promos){
+						$scope.all_discount += parseFloat(priceInfo.promos[promo].price);
 					}
-					
 				})
 		}
 

@@ -124,6 +124,5 @@ $_LANG['clear_demo_data'] = '清除體驗數據';
 $_LANG['manage_required'] = '請輸入超級管理員賬號和密碼';
 $_LANG['login_failure'] = '用戶名或密碼錯誤';
 $_LANG['clear_success'] = '清除成功';
-$_LANG['confirm_clear_demo'] = '確定要清除體驗數據嗎？';
 
 ?>

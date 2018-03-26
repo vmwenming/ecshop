@@ -58,7 +58,7 @@
                         {{goods.property}}
                     </div>
                     <div class="info-price">
-                        {{goods.product_price| currency:"￥"}}
+                        ¥{{goods.product_price}}
                     </div>
                     <div class="info-amount">
                         x{{goods.total_amount}}
@@ -70,16 +70,16 @@
         <!-- Total -->
         <div class="order-summury">
             <div class="summury-detail">
-                运费金额 <span class="total-price">+ {{order.shipping.price| currency:"￥"}}</span>
+                运费金额 <span class="total-price">+ ￥{{order.shipping.price}}</span>
             </div>
 
             <div class="summury-detail" ng-repeat="promo in promos track by $index">
-                {{ promo.name }} <span class="total-price">- {{promo.price| currency:"￥"}}</span>
+                {{ promo.name }} <span class="total-price">- ￥{{promo.price}}</span>
             </div>
 
 
             <div class="summury-total">
-                订单总价 <span class="total-price">= {{order.total| currency:"￥"}}</span>
+                订单总价 <span class="total-price">= ￥{{order.total}}</span>
             </div>
         </div>
 

@@ -13,7 +13,7 @@
 		$stateProvider
 			.state('product', {
 				needAuth: false,
-				url: '/product?product',
+				url: '/product/?product',
 				title: "商品详情",
 				templateUrl: 'modules/product/product.html',
 			});

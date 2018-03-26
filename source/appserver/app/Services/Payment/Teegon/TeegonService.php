@@ -211,5 +211,27 @@ class TeegonService {
         
         return $sHtml;
     }
+
+    /**
+     * 生成要请求给支付宝的参数数组
+     * @param $para_temp 请求前的参数数组
+     * @return 要请求的参数数组
+     */
+    function buildRequestPara($para_temp) {
+        //除去待签名参数数组中的空值和签名参数
+        $para_filter = paraFilter($para_temp);
+
+        //对待签名参数数组排序
+        $para_sort = argSort($para_filter);
+
+        //生成签名结果
+        $mysign = $this->buildRequestMysign($para_sort);
+        
+        //签名结果与签名方式加入请求提交参数组中
+        $para_sort['sign'] = $mysign;
+        $para_sort['sign_type'] = strtoupper(trim($this->alipay_config['sign_type']));
+        
+        return $para_sort;
+    }
 }
 

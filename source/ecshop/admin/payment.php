@@ -283,18 +283,15 @@ elseif ($_REQUEST['act'] == 'edit')
     }
 
     //天工收银配置
-    /*  兼容老的站点和移动端 以shop_config表里的那条为准 */
     if($pay['pay_code']=='yunqi'){
         $teegon_data = $cert->get_yunqi_account();
         $pay['pay_config'][0]['name'] = 'appkey';
         $pay['pay_config'][0]['label'] =$_LANG['appkey'];
-        $pay['pay_config'][0]['type'] = 'text';
-        $pay['pay_config'][0]['value'] = $teegon_data['appkey'];
+        $pay['pay_config'][0]['desc'] = $teegon_data['appkey'].'&nbsp;&nbsp;&nbsp;&nbsp;<a href="'.TEEGON_PASSPORT_URL.'" target="_blank">进入天工官网“开发配置”核对密钥</a>';
         $pay['pay_config'][1]['name'] = 'appsecret';
         $pay['pay_config'][1]['label'] = $_LANG['appsecret'];
-        $pay['pay_config'][1]['type'] = 'text';
-        $pay['pay_config'][1]['value'] = $teegon_data['appsecret'];
-
+        $pay['pay_config'][1]['desc'] = $teegon_data['appsecret'];
+        
     }
     /* 如果以前没设置支付费用，编辑时补上 */
     if (!isset($pay['pay_fee']))
@@ -348,26 +345,6 @@ elseif (isset($_POST['Submit']))
                                   'value' => trim($_POST['cfg_value'][$i])
             );
         }
-    }
-    /*  兼容老的站点和移动端 */
-    if ($_POST['pay_code'] == 'yunqi') {
-        include_once(ROOT_PATH.'includes/cls_certificate.php');
-        $cert = new certificate();
-        foreach ($pay_config as $key => $value) {
-            if ($value['name'] == 'appkey') {
-                $appkey = $value['value'];
-            }
-            if ($value['name'] == 'appsecret') {
-                $appsecret = $value['value'];
-            }
-
-        }
-        if ($appkey && $appsecret) {
-            $status = true;
-        } else {
-            $status = false;
-        }
-        $cert->set_yunqi_account(array('appkey' => $appkey, 'appsecret' => $appsecret, 'status' => $status));
     }
     $pay_config = serialize($pay_config);
     /* 取得和验证支付手续费 */
@@ -434,11 +411,6 @@ elseif ($_REQUEST['act'] == 'uninstall')
            "SET enabled = '0' " .
            "WHERE pay_code = '$_REQUEST[code]' LIMIT 1";
     $db->query($sql);
-
-    if ($_REQUEST['code'] == 'yunqi') {
-        $dSql = "DELETE FROM ".$GLOBALS['ecs']->table('shop_config')." WHERE code='yunqi_account'";
-        $db->query($dSql);
-    }
 
     /* 记录日志 */
     admin_log($_REQUEST['code'], 'uninstall', 'payment');

@@ -1539,7 +1539,7 @@ elseif ($_REQUEST['act'] == 'step_post')
         }
         admin_log($sn, 'edit', 'order');
         // 请求crm
-        update_order_crm($old_order['order_sn']);
+        $update_order_crm($old_order['order_sn']);
         /* 跳回订单商品 */
         ecs_header("Location: order.php?act=" . $step_act . "&order_id=" . $order_id . "&step=goods\n");
         exit;
@@ -3571,7 +3571,7 @@ elseif ($_REQUEST['act'] == 'operate_post')
         $matrix = new matrix();
         $bind_info = $matrix->get_bind_info(array('taodali'));
         if($bind_info){
-            $matrix->createOrder($order['order_sn'],'taodali');
+            $matrix->createOrder($order_info['order_sn'],'taodali');
         }
         // 请求crm
         update_order_crm($order['order_sn']);

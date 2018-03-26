@@ -11,7 +11,7 @@
             <img class="head-avatar" ng-src="image/default-avatar.png" lazy-img="{{user.avatar.thumb}}"/>
 
             <div class="head-info" ng-click="touchSignin()">
-                <div class="info-name">{{isSignIn() ? userName: '点击登录'}}</div>
+                <div class="info-name">{{isSignIn() ? user.nickname : '点击登录'}}</div>
                 <div class="info-grade" ng-if="isSignIn()">{{user.rank ? user.rank.name : '默认等级'}}</div>
             </div>
         </div>
@@ -89,14 +89,14 @@
             <img class="item-arrow" src="image/nav-right.png"/>
         </div>
 
-        <div class="profile-item" ng-click="touchBonus()" ng-if="authorize">
+        <div class="profile-item" ng-click="touchBonus()">
             <img class="item-icon" src="image/e0_recommend.png"/>
             <div class="item-name">我的推荐</div>
             <div class="item-desc"></div>
             <img class="item-arrow" src="image/nav-right.png"/>
         </div>
 
-        <div class="profile-item" ng-click="touchBalance()" ng-if="authorize">
+        <div class="profile-item" ng-click="touchBalance()">
             <img class="item-icon" src="image/e0_balance.png"/>
             <div class="item-name">我的资金</div>
             <div class="item-desc"></div>

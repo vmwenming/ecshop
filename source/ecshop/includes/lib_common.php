@@ -18,9 +18,6 @@ if (!defined('IN_ECS'))
     die('Hacking attempt');
 }
 
-/*  开启全局的Cookie的HttpOnly属性  2017-09-28 17:20:20  */
-@ini_set("session.cookie_httponly", 1);
-
 /**
  * 创建像这样的查询: "IN('a','b')";
  *
@@ -2910,95 +2907,13 @@ function create_env($arr,$file='appserver')
         }
         $api_url = str_replace('www.','',$url);
         $api_url ='http://api.'.$api_url;
-        $new_file = preg_replace("/'API_HOST.*/i", "'API_HOST': '".$api_url."',", $file);
+        $new_file = str_replace('http://api.ecshop3.6.geek-zoo.net',$api_url,$file);
         if (file_put_contents($path, $new_file)){
             return true;
         }else{
             $err->add($_LANG['write_env_config_file_failed']);
             return false;
         }
-    }
-}
-
-
-/**
- * 创建env配置文件
-
- */
-
-function test_api()
-{
-    global $err, $_LANG;    
-
-    $api_url = get_h5_api_host();    
-
-    $headers = array(            
-            'Content-Type' => 'application/json;charset=utf-8'            
-        );
-
-    $data = array();
-    if (strpos($headers["Content-Type"], "/json") !== false) {
-        $json = json_encode($data);
-    }
-
-    // Build headers list in HTTP format
-    $headersList = array_map(function($key, $val) { return "$key: $val";},
-                             array_keys($headers),
-                             $headers);
-
-    $req = curl_init($api_url);
-    curl_setopt($req, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($req, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($req, CURLOPT_HTTPHEADER, $headersList);
-    curl_setopt($req, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($req, CURLOPT_TIMEOUT, 60);
-    // curl_setopt($req, CURLINFO_HEADER_OUT, true);
-     curl_setopt($req, CURLOPT_URL,
-                                $api_url ."?". http_build_query($data));
-   
-   
-    $resp     = curl_exec($req);
-    $respCode = curl_getinfo($req, CURLINFO_HTTP_CODE);
-    $respType = curl_getinfo($req, CURLINFO_CONTENT_TYPE);
-    $error    = curl_error($req);
-    $errno    = curl_errno($req);
-    curl_close($req);
-    /** type of error:
-      *  - curl connection error
-      *  - http status error 4xx, 5xx
-      *  - rest api error
-      */
-    if ($errno > 0) {
-            return false;
-    }
-    if($respCode != 200){
-        return false;
-    }
-    
-    if (strpos($respType, "text/html") !== false) {
-         $err->add($_LANG['test_appserver_failed']);
-    }
-
-    $data = json_decode($resp, true);
-    if (isset($data["error"])) {
-        $code = isset($data["code"]) ? $data["code"] : 400;
-        $err->add($_LANG['test_appserver_failed']);
-    }
-    return true;
-    
-}
-
-/**
- *  获取h5/config/config.app.js文件中配置的API_HOST
- *  @return  string|boolean
- */
-function get_h5_api_host()
-{
-    $h5Config = file_get_contents(ROOT_PATH . "h5/config/config.app.js");
-    if (preg_match("/'API_HOST': '(.*)'/i", $h5Config, $matches)) {
-        return $matches[1];
-    } else {
-        return false;
     }
 }
 

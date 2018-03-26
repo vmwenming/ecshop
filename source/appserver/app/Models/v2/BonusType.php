@@ -54,7 +54,9 @@ class BonusType extends BaseModel {
 
 
             $total = $model->count();
-            $data = $model->paginate($per_page)->toArray();
+            $data = $model->orderBy('type_id', 'DESC')
+                ->paginate($per_page)
+                ->toArray();
 
             return self::formatBody(['cashgifts' => $data['data'],'paged' => self::formatPaged($page, $per_page, $total)]);
         }

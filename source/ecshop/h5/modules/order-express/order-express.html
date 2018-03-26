@@ -23,10 +23,10 @@
                     <span class="item-content">{{orderExpressModel.info.code}}</span>
                 </div>
             </div>
-            <div class="express-status" ng-if="orderExpressModel.info.status && orderExpressModel.info.status.length">
-                <div class="status-item first" ng-repeat="status in orderExpressModel.info.status track by $index">
+            <div class="express-status" ng-if="orderExpressModel.status && orderExpressModel.status.length">
+                <div class="status-item first" ng-repeat="status in orderExpressModel.status track by $index">
                     <div class="item-title">{{status.content}}</div>
-                    <div class="item-content">{{status.datetime}}</div>
+                    <div class="item-content">{{status.datetime | localTime}}</div>
                     <div class="item-vline"></div>
                     <div class="item-dot"></div>
                 </div>

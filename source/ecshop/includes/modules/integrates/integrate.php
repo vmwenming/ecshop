@@ -570,8 +570,8 @@ class integrate
         {
             /* 摧毁cookie */
             $time = time() - 3600;
-            setcookie("ECS[user_id]",  '', $time, $this->cookie_path, NULL, NULL, TRUE);            
-            setcookie("ECS[password]", '', $time, $this->cookie_path, NULL, NULL, TRUE);
+            setcookie("ECS[user_id]",  '', $time, $this->cookie_path);            
+            setcookie("ECS[password]", '', $time, $this->cookie_path);
 
         }
         elseif ($remember)
@@ -579,13 +579,13 @@ class integrate
             /* 设置cookie */
             $time = time() + 3600 * 24 * 15;
 
-            setcookie("ECS[username]", $username, $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie("ECS[username]", $username, $time, $this->cookie_path, $this->cookie_domain);
             $sql = "SELECT user_id, password FROM " . $GLOBALS['ecs']->table('users') . " WHERE user_name='$username' LIMIT 1";
             $row = $GLOBALS['db']->getRow($sql);
             if ($row)
             {
-                setcookie("ECS[user_id]", $row['user_id'], $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-                setcookie("ECS[password]", $row['password'], $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+                setcookie("ECS[user_id]", $row['user_id'], $time, $this->cookie_path, $this->cookie_domain);
+                setcookie("ECS[password]", $row['password'], $time, $this->cookie_path, $this->cookie_domain);
             }
         }
     }

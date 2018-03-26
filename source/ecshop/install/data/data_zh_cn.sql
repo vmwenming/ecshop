@@ -27,8 +27,6 @@ INSERT INTO `ecs_admin_action` (`action_id`, `parent_id`, `action_code`, `releva
 (9, 0, 'templates_manage', ''),
 (10, 0, 'db_manage', ''),
 (11, 0, 'sms_manage', ''),
-(12, 0, 'lead_manage', ''),
-(13, 0, 'certificate_manage', ''),
 (21, 1, 'goods_manage', ''),
 (22, 1, 'remove_back', ''),
 (23, 1, 'cat_manage', ''),
@@ -119,7 +117,6 @@ INSERT INTO `ecs_admin_action` (`action_id`, `parent_id`, `action_code`, `releva
 (121, 10, 'sql_query', ''),
 (122, 10, 'convert', ''),
 (124, 11, 'sms_send', ''),
-(125, 11, 'sms_sign', ''),
 (128, 7, 'exchange_goods', ''),
 (129, 6, 'delivery_view', ''),
 (130, 6, 'back_view', ''),
@@ -127,17 +124,7 @@ INSERT INTO `ecs_admin_action` (`action_id`, `parent_id`, `action_code`, `releva
 (132, 5, 'shop_authorized', ''),
 (133, 5, 'webcollect_manage', ''),
 (134, 4, 'suppliers_manage', ''),
-(135, 4, 'role_manage', ''),
-(140, 12, 'banner_mobile', ''),
-(141, 12, 'lead', ''),
-(142, 12, 'mobile_setting', ''),
-(143, 12, 'h5_setting', ''),
-(144, 12, 'leancloud', ''),
-(145, 12, 'wxa_setting', ''),
-(150, 13, 'certificate', ''),
-(151, 13, 'service_market', ''),
-(152, 13, 'sms_resource', ''),
-(153, 13, 'logistic_tracking', '');
+(135, 4, 'role_manage', '');
 
 --
 --  `ecs_mail_templates`

@@ -25,6 +25,7 @@ class Shipping extends BaseModel
 
     public static function findAll(array $attributes)
     {
+        //address_id for region_id_list
         self::$attrs = $attributes;
         extract($attributes);
 
@@ -33,12 +34,12 @@ class Shipping extends BaseModel
             return self::formatError(self::BAD_REQUEST, trans('message.products.error'));
         }
 
-//        $products = json_decode($products, true);
-//        foreach ($products as $key => $product) {
-//            $is_shipping = Goods::where('goods_id', $product['goods_id'])->pluck('is_shipping')->first();
-//            $products[$key]['is_shipping'] = $is_shipping;
-//        }
-//        self::$attrs = ['products' => json_encode($products)];
+        $products = json_decode($products, true);
+        foreach ($products as $key => $product) {
+            $is_shipping = Goods::where('goods_id', $product['goods_id'])->pluck('is_shipping')->first();
+            $products[$key]['is_shipping'] = $is_shipping;
+        }
+        self::$attrs = ['products' => json_encode($products)];
 
         $region_id_list = UserAddress::getRegionIdList($address);
 
@@ -62,22 +63,25 @@ class Shipping extends BaseModel
         //格式化，拿到需要的goods_id 和数量
         $products = [];
         $IsShippingFree = true;
-	$goods_ids = array();
 
         foreach ($goods as $key => $value) {
             $products[$key]['goods_id'] = $value->goods_id;
             $products[$key]['num'] = $value->goods_number;
-            $goods_ids[] = $value['goods_id'];
-        }
-	
-        // 查看购物车中是否全为免运费商品，若是则把运费赋为零
-        $is_shipping = Goods::whereIn('goods_id', $goods_ids)
-            ->where('is_shipping', 0)
-            ->count();
+            $is_shipping = Goods::where('goods_id', $value->goods_id)->pluck('is_shipping')->first();
+            $products[$key]['is_shipping'] = $is_shipping;
 
-        if($is_shipping == 0){
+            if(!intval($is_shipping)){
+                $IsShippingFree = false;
+            }
+        }
+
+        Log::error('findOne: '.var_export($products,true));
+
+        // 查看购物车中是否全为免运费商品，若是则把运费赋为零
+        if($IsShippingFree){
             return 0;
-	}
+        }
+
         $products = json_encode($products);
         self::$attrs = ['products' => $products];
         $region_id_list = UserAddress::getRegionIdList($address);
@@ -101,21 +105,24 @@ class Shipping extends BaseModel
         //格式化，拿到需要的goods_id 和数量
 
         $products = [];
-        $goods_ids = [];
-        $fee = 0;
-
+        $IsShippingFree = true;
+        Log::error('$goods: '.var_export($goods,true));
         foreach ($goods as $key => $value) {
+            Log::error('$value: '.var_export($value,true));
             $products[$key]['goods_id'] = $value['goods_id'];
             $products[$key]['num'] = $value['num'];
-            $goods_ids[] = $value['goods_id'];
+
+            $is_shipping = Goods::where('goods_id', $value['goods_id'])->pluck('is_shipping')->first();
+            $products[$key]['is_shipping'] = $is_shipping;
+            if(!intval($is_shipping)){
+                $IsShippingFree = false;
+            }
         }
-	
+
+        Log::error('shipFee: '.var_export($products,true));
         // 查看购物车中是否全为免运费商品，若是则把运费赋为零
-	$is_shipping = Goods::whereIn('goods_id', $goods_ids)
-            ->where('is_shipping', 0)
-            ->count();
-        if($is_shipping == 0){
-            return $fee;
+        if($IsShippingFree){
+            return 0;
         }
 
         $products = json_encode($products);
@@ -204,9 +211,10 @@ class Shipping extends BaseModel
         $weight = 0;
         $amount = 0;
         $number = 0;
-	$fee    = 0;
 
-	$goods_ids = array();
+        //如果传products对象 json后数组
+
+        $IsShippingFree = true;
 
         if(isset($products)){
             $products = json_decode($products, true);
@@ -218,16 +226,18 @@ class Shipping extends BaseModel
                     $number += $product['num'];
                 }
 
-                $goods_ids[] = $product['goods_id'];
+                if(!intval($product['is_shipping'])){
+                    $IsShippingFree = false;
+                }
             }
         }
-	
+
+        Log::error('getFeeAttribute:number: '.$number);
+        Log::error('getFeeAttribute:$weight: '.$weight);
+
         // 查看购物车中是否全为免运费商品，若是则把运费赋为零
-        $is_shipping = Goods::whereIn('goods_id', $goods_ids)
-            ->where('is_shipping', 0)
-            ->count();
-        if($is_shipping == 0){
-            return $fee;
+        if($IsShippingFree){
+            return 0;
         }
 
         $configure = self::getConfigure($this->configure);
@@ -267,7 +277,7 @@ class Shipping extends BaseModel
     private static function calculate($configure, $shipping_code, $goods_weight, $goods_amount, $goods_number)
     {
         $fee = 0;
-        if ($configure['free_money'] > 0 && $goods_amount * $goods_number >= $configure['free_money']) {
+        if ($configure['free_money'] > 0 && $goods_amount >= $configure['free_money']) {
             return $fee;
         }
 

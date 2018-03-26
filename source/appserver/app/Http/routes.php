@@ -1,5 +1,4 @@
 <?php
-//
 
 use App\Helper\Token;
 
@@ -37,8 +36,6 @@ $app->group(['namespace' => 'App\Http\Controllers\v2','prefix' => 'v2', 'middlew
     $app->post('ecapi.category.list', 'GoodsController@category');
 
     $app->post('ecapi.product.list', 'GoodsController@index');
-    
-    $app->post('ecapi.home.product.list', 'GoodsController@home');
 
     $app->post('ecapi.search.product.list', 'GoodsController@search');
 
@@ -215,15 +212,4 @@ $app->group(['prefix' => 'v2', 'namespace' => 'App\Http\Controllers\v2', 'middle
     $app->post('ecapi.coupon.list', 'CouponController@index');
 
     $app->post('ecapi.coupon.available', 'CouponController@available');
-
-    $app->post('ecapi.recommend.bonus.list', 'AffiliateController@index');
-    $app->post('ecapi.recommend.bonus.info', 'AffiliateController@info');
-
-    $app->post('ecapi.withdraw.submit', 'AccountController@submit');
-    $app->post('ecapi.withdraw.cancel', 'AccountController@cancel');
-    $app->post('ecapi.withdraw.list', 'AccountController@index');
-    $app->post('ecapi.withdraw.info', 'AccountController@getDetail');
-
-    $app->post('ecapi.balance.get', 'AccountController@surplus');
-    $app->post('ecapi.balance.list', 'AccountController@accountDetail');
 });

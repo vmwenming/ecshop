@@ -24,8 +24,6 @@ $_LANG['email'] = '邮件管理';
 $_LANG['templates_manage'] = '模板管理';
 $_LANG['db_manage'] = '数据库管理';
 $_LANG['sms_manage'] = '短信管理';
-$_LANG['lead_manage'] = '移动版管理';
-$_LANG['certificate_manage'] = '云服务中心';
 
 //商品管理部分的权限
 $_LANG['goods_manage'] = '商品添加/编辑';
@@ -152,23 +150,15 @@ $_LANG['sms_send']        = '发送短信';
 $_LANG['sms_charge']      = '短信充值';
 $_LANG['send_history']    = '发送记录';
 $_LANG['charge_history']  = '充值记录 ';
-$_LANG['sms_sign'] 	      = '短信签名';
 
 //云服务中心管理
-
-$_LANG['certificate'] = '授权绑定';
-$_LANG['service_market'] = '服务市场';
-$_LANG['sms_resource'] = '短信平台';
-$_LANG['logistic_tracking'] = '云起物流';
+$_LANG['certificate_manage'] = '授权绑定';
 
 //移动版全民分销开通引导页管理
-
 $_LANG['banner_mobile'] = '移动端广告配置';
-$_LANG['lead'] = '店铺二维码';
+$_LANG['lead_manage'] = '店铺二维码';
 $_LANG['mobile_setting'] = 'APP应用配置';
 $_LANG['h5_setting'] = 'H5应用配置';
-$_LANG['wxa_setting'] = '小程序应用配置';
 $_LANG['leancloud'] = 'APP推送管理';
-
 
 ?>

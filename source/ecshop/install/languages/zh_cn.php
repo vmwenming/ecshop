@@ -152,7 +152,6 @@ $_LANG['go_to_view_control_panel'] = '前往 ECSHOP 后台管理中心';
 $_LANG['open_config_file_failed'] = '无法写入 data/config.php，请检查该文件是否允许写入。';
 $_LANG['write_config_file_failed'] = '写入配置文件出错';
 $_LANG['write_env_config_file_failed'] = '写入ecmoblie配置文件出错';
-$_LANG['test_appserver_failed'] = '测试APPSERVER接口出错';
 
 /* 客户端JS语言项 */
 $_LANG['js_languages']['success'] = '成功';

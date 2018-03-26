@@ -422,7 +422,6 @@ $_LANG['logout'] = 'You logout successfully.';
 $_LANG['username_empty'] = 'Username is blank.';
 $_LANG['username_invalid'] = 'Username %s contains sensitive characters.';
 $_LANG['username_exist'] = '%s already exists';
-$_LANG['username_inexistent'] = '%s do not exists';
 $_LANG['username_not_allow'] = 'Username %s not allow';
 $_LANG['confirm_register'] = 'Submit';
 
@@ -439,7 +438,6 @@ $_LANG['passwd_question'] = 'Password Question';
 $_LANG['sel_question'] = 'Please choose a password prompt problem';
 $_LANG['passwd_answer'] = 'Password question answer';
 $_LANG['passwd_balnk'] = 'Password can`t have blank';
-$_LANG['phone_number_reg_check_fail'] = 'Incorrect or unregistered mobile phone number';
 
 /* 用户中心默认页面 */
 $_LANG['welcome_to'] = 'Welcome back to';

@@ -35,7 +35,6 @@ else
 /*------------------------------------------------------ */
 if ($_REQUEST['act'] == 'list')
 {
-    admin_priv('ad_manage');
     $pid = !empty($_REQUEST['pid']) ? intval($_REQUEST['pid']) : 0;
 
     $smarty->assign('ur_here',     $_LANG['ad_list']);

@@ -21,7 +21,7 @@ class GoodsGallery extends BaseModel {
     {   
         $goods_images = [];
 
-        $model = self::where('goods_id', $id)->orderBy('img_id')->get();
+        $model = self::where('goods_id', $id)->get();
 
         if (!$model->IsEmpty())
         {
@@ -33,9 +33,9 @@ class GoodsGallery extends BaseModel {
             }
         }
 
-	    return $goods_images;
+        return $goods_images;
     }
-    
+
     public static function getCategoryPhoto($cat_id)
     {
         //获取分类ids

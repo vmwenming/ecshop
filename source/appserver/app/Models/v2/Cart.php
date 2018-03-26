@@ -16,7 +16,7 @@ class Cart extends BaseModel
     protected $primaryKey = 'rec_id';
 
     protected $appends = ['id','amount','property','price','attr_stock','attrs'];
-    protected $visible = ['id','amount','product','property','price','attr_stock','attrs','subtotal','goods_id'];
+    protected $visible = ['id','amount','product','property','price','attr_stock','attrs','subtotal'];
     /* 购物车商品类型 */
     const CART_GENERAL_GOODS        = 0; // 普通商品
     const CART_GROUP_BUY_GOODS      = 1; // 团购商品
@@ -48,7 +48,14 @@ class Cart extends BaseModel
             // 商品不存在
             return self::formatError(self::NOT_FOUND);
         }
-
+        /* 如果是作为配件添加到购物车的，需要先检查购物车里面是否已经有基本件*/
+        // $parent_id = GoodsGroup::where('goods_id',$product)->value('parent_id');
+        // if ($parent_id) {
+        //     $parent_good = self::where('goods_id',$parent_id)->where('extension_code','!=','package_buy')->first();
+        //     if (!$parent_good) {
+        //         return self::formatError(self::BAD_REQUEST,trans('message.good.only_addon'));
+        //     }
+        // }
         /* 是否正在销售 */
         if ($good['is_on_sale'] == 0) {
             return self::formatError(self::BAD_REQUEST,trans('message.good.off_sale'));
@@ -74,7 +81,7 @@ class Cart extends BaseModel
         }
         if (empty($product_info))
         {
-            $product_info = array('stock_number' => 0, 'id' => 0);
+            $product_info = array('product_number' => '', 'product_id' => 0);
         }
         /* 检查：库存 */
         //检查：商品购买数量是否大于总库存
@@ -88,7 +95,7 @@ class Cart extends BaseModel
             if (!empty($property))
             {
                 /* 取规格的货品库存 */
-                if ($amount > $prod->product_number)
+                if ($amount > $product_info['product_number'])
                 {
                     return self::formatError(self::BAD_REQUEST,trans('message.good.out_storage'));
                 }
@@ -107,7 +114,7 @@ class Cart extends BaseModel
             // 'session_id'    => SESS_ID,
             'goods_id'      => $product,
             'goods_sn'      => addslashes($good['goods_sn']),
-            'product_id'    => $product_info['id'],
+            'product_id'    => $product_info['product_id'],
             'goods_name'    => addslashes($good['goods_name']),
             'market_price'  => $good['market_price'],
             'goods_attr'    => addslashes($goods_attr),
@@ -122,16 +129,39 @@ class Cart extends BaseModel
         /* 则按照该配件的优惠价格卖，但是每一个基本件只能购买一个优惠价格的“该配件”，多买的“该配件”不享 */
         /* 受此优惠 */
         $basic_list = array();
- 
+        // $sql = "SELECT parent_id, goods_price " .
+        //         "FROM " . $GLOBALS['ecs']->table('group_goods') .
+        //         " WHERE goods_id = '$goods_id'" .
+        //         " AND goods_price < '$goods_price'" .
+        //         " AND parent_id = '$_parent_id'" .
+        //         " ORDER BY goods_price";
+        // $res = $GLOBALS['db']->query($sql);
+        // while ($row = $GLOBALS['db']->fetchRow($res))
+        // {
+        //     $basic_list[$row['parent_id']] = $row['goods_price'];
+        // }
         $res = GoodsGroup::where('goods_id',$product)->where('goods_price','<',$goods_price)->where('parent_id',$parent)->orderBy('goods_price')->get(['parent_id','goods_price']);
         foreach ($res as $key => $row) {
             $basic_list[$row['parent_id']] = $row['goods_price'];
         }
 
         /* 取得购物车中该商品每个基本件的数量 */
+
         $basic_count_list = array();
         if ($basic_list)
         {
+            // $sql = "SELECT goods_id, SUM(goods_number) AS count " .
+            //         "FROM " . $GLOBALS['ecs']->table('cart') .
+            //         " WHERE session_id = '" . SESS_ID . "'" .
+            //         " AND parent_id = 0" .
+            //         " AND extension_code <> 'package_buy' " .
+            //         " AND goods_id " . db_create_in(array_keys($basic_list)) .
+            //         " GROUP BY goods_id";
+            // $res = $GLOBALS['db']->query($sql);
+            // while ($row = $GLOBALS['db']->fetchRow($res))
+            // {
+            //     $basic_count_list[$row['goods_id']] = $row['count'];
+            // }
             $res = Cart::where('parent_id',0)
             ->where('extension_code','!=','package_buy')
             ->whereIn('goods_id',array_keys($basic_list))
@@ -146,8 +176,23 @@ class Cart extends BaseModel
 
         /* 取得购物车中该商品每个基本件已有该商品配件数量，计算出每个基本件还能有几个该商品配件 */
         /* 一个基本件对应一个该商品配件 */
+
         if ($basic_count_list)
         {
+            // $sql = "SELECT parent_id, SUM(goods_number) AS count " .
+            //         "FROM " . $GLOBALS['ecs']->table('cart') .
+            //         " WHERE session_id = '" . SESS_ID . "'" .
+            //         " AND goods_id = '$goods_id'" .
+            //         " AND extension_code <> 'package_buy' " .
+            //         " AND parent_id " . db_create_in(array_keys($basic_count_list)) .
+            //         " GROUP BY parent_id";
+            // $res = $GLOBALS['db']->query($sql);
+            // while ($row = $GLOBALS['db']->fetchRow($res))
+            // {
+            //     $basic_count_list[$row['parent_id']] -= $row['count'];
+            // }
+
+
             $res = Cart::where('parent_id',0)
             ->where('extension_code','!=','package_buy')
             ->where('goods_id',$product)
@@ -188,6 +233,7 @@ class Cart extends BaseModel
             $parent['parent_id']    = $parent_id;
 
             /* 添加 */
+            // $GLOBALS['db']->autoExecute($GLOBALS['ecs']->table('cart'), $parent, 'INSERT');
             Cart::insert($parent);
             /* 改变数量 */
             $amount -= $parent['goods_number'];
@@ -196,6 +242,14 @@ class Cart extends BaseModel
 
         if ($amount > 0)
         {
+            /* 检查该商品是否已经存在在购物车中 */
+            // $sql = "SELECT goods_number FROM " .$GLOBALS['ecs']->table('cart').
+            //         " WHERE session_id = '" .SESS_ID. "' AND goods_id = '$goods_id' ".
+            //         " AND parent_id = 0 AND goods_attr = '" .get_goods_attr_info($property). "' " .
+            //         " AND extension_code <> 'package_buy' " .
+            //         " AND rec_type = 'CART_GENERAL_GOODS'";
+
+            // $row = $GLOBALS['db']->getRow($sql);
             $user_id = Token::authorization();
 
             $row = Cart::where('goods_id',$product)->where('user_id',$user_id)->where('parent_id',0)->where('goods_attr',Attribute::get_goods_attr_info($property))->where('extension_code','!=','package_buy')->where('rec_type',self::CART_GENERAL_GOODS)->first();
@@ -205,7 +259,7 @@ class Cart extends BaseModel
                 $amount += $row['goods_number'];
                 if(Attribute::is_property($property) && !empty($prod) )
                 {
-                 $goods_storage = $product_info['stock_number'];
+                 $goods_storage = $product_info['product_number'];
                 }
                 else
                 {
@@ -215,6 +269,13 @@ class Cart extends BaseModel
                 if ($amount <= $goods_storage)
                 {
                     $goods_final_price = Goods::get_final_price($product, $amount, true, $property);
+                    // $sql = "UPDATE " . $GLOBALS['ecs']->table('cart') . " SET goods_number = '$amount'" .
+                    //        " , goods_price = '$goods_price'".
+                    //        " WHERE session_id = '" .SESS_ID. "' AND goods_id = '$goods_id' ".
+                    //        " AND parent_id = 0 AND goods_attr = '" .get_goods_attr_info($property). "' " .
+                    //        " AND extension_code <> 'package_buy' " .
+                    //        "AND rec_type = 'CART_GENERAL_GOODS'";
+                    // $GLOBALS['db']->query($sql);
                     Cart::where('goods_id' , $product)
                         ->where('user_id',$user_id)
                         ->where('parent_id' , 0)
@@ -235,9 +296,12 @@ class Cart extends BaseModel
                 $parent['goods_number'] = $amount;
                 $parent['parent_id']    = 0;
                 Cart::insert($parent);
+                // $GLOBALS['db']->autoExecute($GLOBALS['ecs']->table('cart'), $parent, 'INSERT');
             }
         }
         /* 把赠品删除 */
+        // $sql = "DELETE FROM " . $GLOBALS['ecs']->table('cart') . " WHERE session_id = '" . SESS_ID . "' AND is_gift <> 0";
+        // $GLOBALS['db']->query($sql);
         Cart::where('is_gift','!=',0)->delete();
 
         return self::formatBody(['goods' => $parent]);
@@ -435,10 +499,12 @@ class Cart extends BaseModel
         }
         if(isset($is_real_good))
         {
+            // $sql="SELECT shipping_id FROM " . $ecs->table('shipping') . " WHERE shipping_id=".$order['shipping_id'] ." AND enabled =1";
             $shipping_is_real = Shipping::where('shipping_id',$order['shipping_id'])->where('enabled',1)->first();
             if(!$shipping_is_real)
             {
-                return self::formatError(self::BAD_REQUEST, '您必须选定一个配送方式');
+                return self::formatError(self::BAD_REQUEST,trans('message.good.min_goods_amount'));
+               // show_message($_LANG['flow_no_shipping']);
             }
         }
         /* 订单中的总额 */
@@ -508,14 +574,7 @@ class Cart extends BaseModel
          $order['integral']         = $total['integral'];
 
         $order['parent_id'] = 0;
-        
-        // 获取新订单号 验证订单号重复
-        do {
-            $order['order_sn'] = Order::get_order_sn();
-
-            $order_sn = Order::where('order_sn', $order['order_sn'])->first();
-
-        } while (!empty($order_sn));
+        $order['order_sn'] = Order::get_order_sn(); //获取新订单号
 
         /* 插入订单表 */
 
@@ -530,8 +589,16 @@ class Cart extends BaseModel
         // unset($order['surplus']);
         $new_order_id = Order::insertGetId($order);
         $order['order_id'] = $new_order_id;
-	
         /* 插入订单商品 */
+        // $sql = "INSERT INTO " . $ecs->table('order_goods') . "( " .
+        //             "order_id, goods_id, goods_name, goods_sn, product_id, goods_number, market_price, ".
+        //             "goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, goods_attr_id) ".
+        //         " SELECT '$new_order_id', goods_id, goods_name, goods_sn, product_id, goods_number, market_price, ".
+        //             "goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, goods_attr_id".
+        //         " FROM " .$ecs->table('cart') .
+        //         " WHERE session_id = '".SESS_ID."' AND rec_type = '$flow_type'";
+        // $db->query($sql);
+
         $cart_goods = Cart::whereIn('rec_id',$cart_good_ids)->where('rec_type',$flow_type)->get();
         foreach ($cart_goods as $key => $cart_good) {
             $order_good                 = new OrderGoods;
@@ -579,6 +646,12 @@ class Cart extends BaseModel
         /* 如果订单金额为0 处理虚拟卡 */
         if ($order['order_amount'] <= 0)
         {
+            // $sql = "SELECT goods_id, goods_name, goods_number AS num FROM ".
+            //        $GLOBALS['ecs']->table('cart') .
+            //         " WHERE is_real = 0 AND extension_code = 'virtual_card'".
+            //         " AND session_id = '".SESS_ID."' AND rec_type = '$flow_type'";
+
+            // $res = $GLOBALS['db']->getAll($sql);
             $res = self::where('is_real',0)
                         ->where('extension_code','virtual_card')
                         ->where('rec_type','flow_type')
@@ -597,6 +670,10 @@ class Cart extends BaseModel
                 if (virtual_goods_ship($virtual_goods,$msg, $order['order_sn'], true))
                 {
                     /* 如果没有实体商品，修改发货状态，送积分和红包 */
+                    // $sql = "SELECT COUNT(*)" .
+                    //         " FROM " . $ecs->table('order_goods') .
+                    //         " WHERE order_id = '$order[order_id]' " .
+                    //         " AND is_real = 1";
                     $get_count = OrderGoods::where('order_id',$order['order_id'])
                     ->where('is_real',1)
                     ->count();
@@ -626,6 +703,9 @@ class Cart extends BaseModel
         }
         /* 清空购物车 */
         self::clear_cart_ids($cart_good_ids,$flow_type);
+        /* 清除缓存，否则买了商品，但是前台页面读取缓存，商品数量不减少 */
+        // clear_all_files();
+
 
         /* 插入支付日志 */
         // $order['log_id'] = insert_pay_log($new_order_id, $order['order_amount'], PAY_ORDER);
@@ -688,51 +768,6 @@ class Cart extends BaseModel
     public static function getList()
     {
         $uid = Token::authorization();
-	
-        // ----------------------
-        $goods = self::join('goods', 'goods.goods_id', '=', 'cart.goods_id')
-            ->where('user_id', $uid)
-            ->where('goods.is_on_sale',1)
-            ->where('goods.is_delete', 0)
-            ->get();
-
-        $use_storage = ShopConfig::where('code', 'use_storage')->value('value');
-
-        foreach ($goods as $key => $value) 
-        {
-            // if (intval($use_storage) > 0 && $value->extension_code != 'package_buy')
-            // {
-
-            //     $goods_row = Goods::where('goods_id', $value->goods_id)->first();
-            //     if (($goods_row->goods_number) < ($value->goods_number))
-            //     {
-            //         return self::formatError(self::BAD_REQUEST,trans('message.good.out_storage'));
-            //     }
-            //     /* 是货品 */
-            //     if (!empty($value->product_id))
-            //     {
-            //         $product_row = Products::where('goods_id', $value->goods_id)->where('product_id', $value->product_id)->first();
-            //         if (($product_row->product_number) < ($value->goods_number))
-            //         {
-            //             return self::formatError(self::BAD_REQUEST,trans('message.good.out_storage'));
-            //         }
-            //     }
-            // }
-
-            //订货数量大于0
-            if ($value->goods_number > 0)
-            {
-                $attr_id    = empty($value->goods_attr_id) ? array() : explode(',', $value->goods_attr_id);
-                
-                $goods_price = Goods::get_final_price($value->goods_id, $value->goods_number, true, $attr_id);
-
-                //更新购物车中的商品数量
-                self::where('rec_id', $value->rec_id)->update(['goods_price' => $goods_price]);
-            }
-
-        }
-        // ----------------------
-	
         $data = [];
         $goods = self::findAllByUid($uid);
         if ($goods->count() > 0) {
@@ -912,8 +947,17 @@ class Cart extends BaseModel
             {
                 continue;
             }
-	    
+
+            // $sql = "SELECT `goods_id`, `goods_attr_id`, `extension_code` FROM" .$GLOBALS['ecs']->table('cart').
+            //        " WHERE rec_id='$key' AND session_id='" . SESS_ID . "'";
+            // $goods = $GLOBALS['db']->getRow($sql);
+
             $goods = self::where('rec_id',$key)->first(['goods_id','goods_attr_id','extension_code']);
+            // $sql = "SELECT g.goods_name, g.goods_number, c.product_id ".
+            //         "FROM " .$GLOBALS['ecs']->table('goods'). " AS g, ".
+            //             $GLOBALS['ecs']->table('cart'). " AS c ".
+            //         "WHERE g.goods_id = c.goods_id AND c.rec_id = '$key'";
+            // $row = $GLOBALS['db']->getRow($sql);
 
             $row = Goods::join('cart','goods.goods_id', '=', 'cart.goods_id')
                     ->where('cart.rec_id', $key)
@@ -927,16 +971,26 @@ class Cart extends BaseModel
             {
                 if ($row['goods_number'] < $val)
                 {
+                    // show_message(sprintf($GLOBALS['_LANG']['stock_insufficiency'], $row['goods_name'],
+                    // $row['goods_number'], $row['goods_number']));
+                    // exit;
+
                     return false;
+
                 }
 
                 /* 是货品 */
                 $row['product_id'] = trim($row['product_id']);
                 if (!empty($row['product_id']))
                 {
+                    // $sql = "SELECT product_number FROM " .$GLOBALS['ecs']->table('products'). " WHERE goods_id = '" . $goods['goods_id'] . "' AND product_id = '" . $row['product_id'] . "'";
+                    // $product_number = $GLOBALS['db']->getOne($sql);
                     $product_number = Products::where('goods_id',$goods['goods_id'])->where('product_id',$row['product_id'])->value('product_number');
                     if ($product_number < $val)
                     {
+                        // show_message(sprintf($GLOBALS['_LANG']['stock_insufficiency'], $row['goods_name'],
+                        // $row['goods_number'], $row['goods_number']));
+                        // exit;
                         return false;
                     }
                 }
@@ -953,11 +1007,15 @@ class Cart extends BaseModel
      */
     public static function cart_amount($include_gift = true, $type = CART_GENERAL_GOODS)
     {
-    
+        // $sql = "SELECT SUM(goods_price * goods_number) " .
+        //         " FROM " . $GLOBALS['ecs']->table('cart') .
+        //         " WHERE session_id = '" . SESS_ID . "' " .
+        //         "AND rec_type = '$type' ";
         $user_id = Token::authorization();
         $res = self::where('rec_type',$type)->where('user_id', $user_id);
         if (!$include_gift)
         {
+            // $sql .= ' AND is_gift = 0 AND goods_id > 0';
             $res->where('is_gift',0)->where('goods_id','>',0);
         }
         $total = $res->selectRaw('sum(goods_price * goods_number) as total')
@@ -974,6 +1032,14 @@ class Cart extends BaseModel
      */
     public static function cart_goods($type = CART_GENERAL_GOODS,$cart_good_ids)
     {
+        // $sql = "SELECT rec_id, user_id, goods_id, goods_name, goods_sn, goods_number, " .
+        //         "market_price, goods_price, goods_attr, is_real, extension_code, parent_id, is_gift, is_shipping, " .
+        //         "goods_price * goods_number AS subtotal " .
+        //         "FROM " . $GLOBALS['ecs']->table('cart') .
+        //         " WHERE session_id = '" . SESS_ID . "' " .
+        //         "AND rec_type = '$type'";
+
+        // $arr = $GLOBALS['db']->getAll($sql);
         $arr = self::where('rec_type',$type)->whereIn('rec_id',$cart_good_ids)->get();
 
         /* 格式化价格及礼包商品 */
@@ -1039,17 +1105,22 @@ class Cart extends BaseModel
             }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_CATEGORY)
             {
-	    	foreach ($goods_list as $goods)
-                {
-                    $cat_id = Goods::where('goods_id', $goods['goods_id'])->value('cat_id');
+                // /* 找出分类id的子分类id */
+                // $id_list = array();
+                // $raw_id_list = explode(',', $favourable['act_range_ext']);
+                // foreach ($raw_id_list as $id)
+                // {
+                //     $id_list = array_merge($id_list, array_keys(self::cat_list($id, 0, false)));
+                // }
+                // $ids = join(',', array_unique($id_list));
 
-                    $cat_parent_id = Category::where('cat_id', $cat_id)->value('parent_id');
-
-                    if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_id . ',') !== false || strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_parent_id . ',') !== false)
-                    {
-                        $total_amount += $goods['price'] * $goods['amount'];
-                    }
-                }
+                // foreach ($goods_list as $goods)
+                // {
+                //     if (strpos(',' . $ids . ',', ',' . $goods['cat_id'] . ',') !== false)
+                //     {
+                //         $total_amount += $goods['price'] * $goods['amount'];
+                //     }
+                // }
             }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_BRAND)
             {
@@ -1144,17 +1215,22 @@ class Cart extends BaseModel
             }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_CATEGORY)
             {
-	    	foreach ($goods_list as $goods)
-                {
-                    $cat_id = Goods::where('goods_id', $goods['goods_id'])->value('cat_id');
+                // /* 找出分类id的子分类id */
+                // $id_list = array();
+                // $raw_id_list = explode(',', $favourable['act_range_ext']);
+                // foreach ($raw_id_list as $id)
+                // {
+                //     $id_list = array_merge($id_list, array_keys(cat_list($id, 0, false)));
+                // }
+                // $ids = join(',', array_unique($id_list));
 
-                    $cat_parent_id = Category::where('cat_id', $cat_id)->value('parent_id');
-
-                    if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_id . ',') !== false || strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_parent_id . ',') !== false)
-                    {
-                        $total_amount += $goods['price'] * $goods['amount'];
-                    }
-                }
+                // foreach ($goods_list as $goods)
+                // {
+                //     if (strpos(',' . $ids . ',', ',' . $goods['cat_id'] . ',') !== false)
+                //     {
+                //         $total_amount += $goods['price'] * $goods['amount'];
+                //     }
+                // }
             }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_BRAND)
             {
@@ -1206,6 +1282,7 @@ class Cart extends BaseModel
         $now = time();
         $user_rank = UserRank::getUserRankByUid();
         $user_rank = ',' . $user_rank['rank_id'] . ',';
+
         $favourable_list = FavourableActivity::where('start_time','<=',$now)
                             ->where('end_time','>=',$now)
                             ->where(DB::raw("CONCAT(',', user_rank, ',')"), 'LIKE', "%".$user_rank."%")
@@ -1215,16 +1292,14 @@ class Cart extends BaseModel
         {
             return 0;
         }
-         $goods_list = [$order_products];
-         foreach ($goods_list as $key => $good) {
-            $goods_list[$key]['price'] = Goods::get_final_price($good['id'],$good['num']);
-            $goods_list[$key]['amount'] = $good['num'];
-         }
-        if (!$goods_list)
+        $goods = $order_products;
+
+        $goods['price'] = Goods::get_final_price($goods['id'], $order_products['num']);
+        $goods['amount'] = $order_products['num'];
+        if (!$goods)
         {
             return 0;
         }
-
         /* 初始化折扣 */
         $discount = 0;
         $favourable_name = array();
@@ -1235,62 +1310,63 @@ class Cart extends BaseModel
             $total_amount = 0;
             if ($favourable['act_range'] == FavourableActivity::FAR_ALL)
             {
-                foreach ($goods_list as $goods)
+                $total_amount += $goods['price'] * $goods['amount'];                
+            }
+            elseif ($favourable['act_range'] == FavourableActivity::FAR_CATEGORY)
+            {
+                // /* 找出分类id的子分类id */
+                // $id_list = array();
+                // $raw_id_list = explode(',', $favourable['act_range_ext']);
+                // foreach ($raw_id_list as $id)
+                // {
+                //     $id_list = array_merge($id_list, array_keys(cat_list($id, 0, false)));
+                // }
+                // $ids = join(',', array_unique($id_list));
+
+                // foreach ($goods_list as $goods)
+                // {
+                //     if (strpos(',' . $ids . ',', ',' . $goods['cat_id'] . ',') !== false)
+                //     {
+                //         $total_amount += $goods['price'] * $goods['amount'];
+                //     }
+                // }
+            }
+            elseif ($favourable['act_range'] == FavourableActivity::FAR_BRAND)
+            {
+                $brand_id = $goods['brand'];
+                if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $brand_id . ',') !== false)
                 {
                     $total_amount += $goods['price'] * $goods['amount'];
                 }
             }
-            elseif ($favourable['act_range'] == FavourableActivity::FAR_CATEGORY)
-            {
-            foreach ($goods_list as $goods)
-                {
-                    $cat_id = Goods::where('goods_id', $goods['id'])->value('cat_id');
-
-                    $cat_parent_id = Category::where('cat_id', $cat_id)->value('parent_id');
-
-                    if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_id . ',') !== false || strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_parent_id . ',') !== false)
-                    {
-                        $total_amount += $goods['price'] * $goods['amount'];
-                    }
-                }
-            }
-            elseif ($favourable['act_range'] == FavourableActivity::FAR_BRAND)
-            {
-                foreach ($goods_list as $goods)
-                {
-                    $brand_id = Goods::where('goods_id',$goods['id'])->value('brand_id');
-                    if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $brand_id . ',') !== false)
-                    {
-                        $total_amount += $goods['price'] * $goods['amount'];
-                    }
-                }
-            }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_GOODS)
             {
-                foreach ($goods_list as $goods)
+                if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $goods['id'] . ',') !== false)
                 {
-                    if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $goods['id'] . ',') !== false)
-                    {
-                        $total_amount += $goods['price'] * $goods['amount'];                        
-                    }
+                    $total_amount += $goods['price'] * $goods['amount'];
                 }
             }
             else
             {
                 continue;
             }
+
             if ($total_amount > 0 && $total_amount >= $favourable['min_amount'] && ($total_amount <= $favourable['max_amount'] || $favourable['max_amount'] == 0))
             {
                 if ($favourable['act_type'] == FavourableActivity::FAT_DISCOUNT)
                 {
                     $discount += $total_amount * (1 - $favourable['act_type_ext'] / 100);
+
                 }
                 elseif ($favourable['act_type'] == FavourableActivity::FAT_PRICE)
                 {
                     $discount += $favourable['act_type_ext'];
                 }
+
+
             }
         }
+
         return $discount;
     }
 
@@ -1305,6 +1381,13 @@ class Cart extends BaseModel
         $now = time();
         $user_rank = UserRank::getUserRankByUid();
         $user_rank = ',' . $user_rank['rank_id'] . ',';
+        // $sql = "SELECT *" .
+        //         "FROM " . $GLOBALS['ecs']->table('favourable_activity') .
+        //         " WHERE start_time <= '$now'" .
+        //         " AND end_time >= '$now'" .
+        //         " AND CONCAT(',', user_rank, ',') LIKE '%" . $user_rank . "%'" .
+        //         " AND act_type " . db_create_in(array(FavourableActivity::FAT_DISCOUNT, FavourableActivity::FAT_PRICE));
+        // $favourable_list = $GLOBALS['db']->getAll($sql);
 
         $favourable_list = FavourableActivity::where('start_time','<=',$now)
                             ->where('end_time','>=',$now)
@@ -1345,17 +1428,22 @@ class Cart extends BaseModel
             }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_CATEGORY)
             {
-                foreach ($goods_list as $goods)
-                {
-                    $cat_id = Goods::where('goods_id', $goods['goods_id'])->value('cat_id');
+                // /* 找出分类id的子分类id */
+                // $id_list = array();
+                // $raw_id_list = explode(',', $favourable['act_range_ext']);
+                // foreach ($raw_id_list as $id)
+                // {
+                //     $id_list = array_merge($id_list, array_keys(cat_list($id, 0, false)));
+                // }
+                // $ids = join(',', array_unique($id_list));
 
-                    $cat_parent_id = Category::where('cat_id', $cat_id)->value('parent_id');
-
-                    if (strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_id . ',') !== false || strpos(',' . $favourable['act_range_ext'] . ',', ',' . $cat_parent_id . ',') !== false)
-                    {
-                        $total_amount += $goods['price'] * $goods['amount'];
-                    }
-                }
+                // foreach ($goods_list as $goods)
+                // {
+                //     if (strpos(',' . $ids . ',', ',' . $goods['cat_id'] . ',') !== false)
+                //     {
+                //         $total_amount += $goods['price'] * $goods['amount'];
+                //     }
+                // }
             }
             elseif ($favourable['act_range'] == FavourableActivity::FAR_BRAND)
             {
@@ -1469,4 +1557,155 @@ class Cart extends BaseModel
 
         return (float)($total);
     }
+
+    // /**
+    //  * 获得指定分类下的子分类的数组
+    //  *
+    //  * @access  public
+    //  * @param   int     $cat_id     分类的ID
+    //  * @param   int     $selected   当前选中分类的ID
+    //  * @param   boolean $re_type    返回的类型: 值为真时返回下拉列表,否则返回数组
+    //  * @param   int     $level      限定返回的级数。为0时返回所有级数
+    //  * @param   int     $is_show_all 如果为true显示所有分类，如果为false隐藏不可见分类。
+    //  * @return  mix
+    //  */
+    // public static function cat_list($cat_id = 0, $selected = 0, $re_type = true, $level = 0, $is_show_all = true)
+    // {
+    //     static $res = NULL;
+
+    //     if ($res === NULL)
+    //     {
+    //         $data = false;
+    //         if ($data === false)
+    //         {
+    //             $sql = "SELECT c.cat_id, c.cat_name, c.measure_unit, c.parent_id, c.is_show, c.show_in_nav, c.grade, c.sort_order, COUNT(s.cat_id) AS has_children ".
+    //                 'FROM ' . $GLOBALS['ecs']->table('category') . " AS c ".
+    //                 "LEFT JOIN " . $GLOBALS['ecs']->table('category') . " AS s ON s.parent_id=c.cat_id ".
+    //                 "GROUP BY c.cat_id ".
+    //                 'ORDER BY c.parent_id, c.sort_order ASC';
+    //             $res = $GLOBALS['db']->getAll($sql);
+
+    //             $res = Category::leftJoin('category','category.parent_id','=','category.cat_id')
+    //                     ->groupBy('category.cat_id')
+    //                     ->orderBy('category.parent_id','ASC')
+    //                     ->orderBy('category.sort_order',$'ASC')
+    //                     ->selectRaw('count(category.cat_id) as count')
+    //                     ->get(['attribute.attr_type','attribute.attr_type','attribute.attr_type','attribute.attr_type','attribute.attr_type','attribute.attr_type','attribute.attr_type','attribute.attr_type',]);
+
+    //             $sql = "SELECT cat_id, COUNT(*) AS goods_num " .
+    //                     " FROM " . $GLOBALS['ecs']->table('goods') .
+    //                     " WHERE is_delete = 0 AND is_on_sale = 1 " .
+    //                     " GROUP BY cat_id";
+    //             $res2 = $GLOBALS['db']->getAll($sql);
+
+    //             $sql = "SELECT gc.cat_id, COUNT(*) AS goods_num " .
+    //                     " FROM " . $GLOBALS['ecs']->table('goods_cat') . " AS gc , " . $GLOBALS['ecs']->table('goods') . " AS g " .
+    //                     " WHERE g.goods_id = gc.goods_id AND g.is_delete = 0 AND g.is_on_sale = 1 " .
+    //                     " GROUP BY gc.cat_id";
+    //             $res3 = $GLOBALS['db']->getAll($sql);
+
+    //             $newres = array();
+    //             foreach($res2 as $k=>$v)
+    //             {
+    //                 $newres[$v['cat_id']] = $v['goods_num'];
+    //                 foreach($res3 as $ks=>$vs)
+    //                 {
+    //                     if($v['cat_id'] == $vs['cat_id'])
+    //                     {
+    //                     $newres[$v['cat_id']] = $v['goods_num'] + $vs['goods_num'];
+    //                     }
+    //                 }
+    //             }
+
+    //             foreach($res as $k=>$v)
+    //             {
+    //                 $res[$k]['goods_num'] = !empty($newres[$v['cat_id']]) ? $newres[$v['cat_id']] : 0;
+    //             }
+    //         }
+    //     }
+
+    //     if (empty($res) == true)
+    //     {
+    //         return $re_type ? '' : array();
+    //     }
+
+    //     $options = cat_options($cat_id, $res); // 获得指定分类下的子分类的数组
+
+    //     $children_level = 99999; //大于这个分类的将被删除
+    //     if ($is_show_all == false)
+    //     {
+    //         foreach ($options as $key => $val)
+    //         {
+    //             if ($val['level'] > $children_level)
+    //             {
+    //                 unset($options[$key]);
+    //             }
+    //             else
+    //             {
+    //                 if ($val['is_show'] == 0)
+    //                 {
+    //                     unset($options[$key]);
+    //                     if ($children_level > $val['level'])
+    //                     {
+    //                         $children_level = $val['level']; //标记一下，这样子分类也能删除
+    //                     }
+    //                 }
+    //                 else
+    //                 {
+    //                     $children_level = 99999; //恢复初始值
+    //                 }
+    //             }
+    //         }
+    //     }
+
+    //     /* 截取到指定的缩减级别 */
+    //     if ($level > 0)
+    //     {
+    //         if ($cat_id == 0)
+    //         {
+    //             $end_level = $level;
+    //         }
+    //         else
+    //         {
+    //             $first_item = reset($options); // 获取第一个元素
+    //             $end_level  = $first_item['level'] + $level;
+    //         }
+
+    //         /* 保留level小于end_level的部分 */
+    //         foreach ($options AS $key => $val)
+    //         {
+    //             if ($val['level'] >= $end_level)
+    //             {
+    //                 unset($options[$key]);
+    //             }
+    //         }
+    //     }
+
+    //     if ($re_type == true)
+    //     {
+    //         $select = '';
+    //         foreach ($options AS $var)
+    //         {
+    //             $select .= '<option value="' . $var['cat_id'] . '" ';
+    //             $select .= ($selected == $var['cat_id']) ? "selected='ture'" : '';
+    //             $select .= '>';
+    //             if ($var['level'] > 0)
+    //             {
+    //                 $select .= str_repeat('&nbsp;', $var['level'] * 4);
+    //             }
+    //             $select .= htmlspecialchars(addslashes($var['cat_name']), ENT_QUOTES) . '</option>';
+    //         }
+
+    //         return $select;
+    //     }
+    //     else
+    //     {
+    //         foreach ($options AS $key => $value)
+    //         {
+    //             $options[$key]['url'] = build_uri('category', array('cid' => $value['cat_id']), $value['cat_name']);
+    //         }
+
+    //         return $options;
+    //     }
+    // }
 }

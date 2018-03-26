@@ -137,8 +137,6 @@ function insert_ads($arr)
 {
     static $static_res = NULL;
 
-    $arr['num'] = intval($arr['num']);
-    $arr['id'] = intval($arr['id']);
     $time = gmtime();
     if (!empty($arr['num']) && $arr['num'] != 1)
     {
@@ -269,8 +267,6 @@ function insert_comments($arr)
 
     $GLOBALS['smarty']->caching = false;
     $GLOBALS['smarty']->force_compile = true;
-    $arr['id'] = intval($arr['id']);
-    $arr['type'] = addslashes($arr['type']);
 
     /* 验证码相关设置 */
     if ((intval($GLOBALS['_CFG']['captcha']) & CAPTCHA_COMMENT) && gd_version() > 0)
@@ -309,7 +305,6 @@ function insert_bought_notes($arr)
 
     $GLOBALS['smarty']->caching = false;
     $GLOBALS['smarty']->force_compile = true;
-    $arr['id'] = intval($arr['id']);
 
     /* 商品购买记录 */
     $sql = 'SELECT u.user_name, og.goods_number, oi.add_time, IF(oi.order_status IN (2, 3, 4), 0, 1) AS order_status ' .

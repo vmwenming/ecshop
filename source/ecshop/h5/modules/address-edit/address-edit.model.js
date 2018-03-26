@@ -35,7 +35,7 @@
 				return API.consignee.add({
 						name: name,
 						mobile: mobile,
-						tel: mobile,
+						tel: '',
 						zip_code: '',
 						region: region,
 						address: address
@@ -50,7 +50,7 @@
 						consignee: this.consignee.id,
 						name: name,
 						mobile: mobile,
-						tel: mobile,
+						tel: '',
 						zip_code: '',
 						region: region,
 						address: address

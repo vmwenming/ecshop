@@ -1,5 +1,4 @@
 <?php
-//
 
 if ( ! function_exists('config_path'))
 {
@@ -77,7 +76,7 @@ if (! function_exists('formatPhoto')) {
      * @param  string $photo
      * @return array
      */
-     function formatPhoto($img, $thumb = null, $domain = null)
+    function formatPhoto($img, $thumb = null, $domain = null)
     {
         if ($img == null) {
             return null;
@@ -88,22 +87,13 @@ if (! function_exists('formatPhoto')) {
         
         $domain = $domain == null ?  config('app.shop_url') : $domain ;
 
-          if(!preg_match('/^http/', $thumb)  &&!preg_match('/^https/', $thumb) ){
-           $thumb =  $domain.'/'.$thumb ;
-        }
-
-
-        if(!preg_match('/^http/', $img)  &&!preg_match('/^https/', $img) ){
-           $img =  $domain.'/'.$img ;
-        }         
-
         return [
             'width'  => null,
             'height' => null,
 
             //定义图片服务器
-            'thumb'  => $thumb,
-            'large'  => $img
+            'thumb'  => (strpos($thumb, 'http://') === false) ? $domain.'/'.$thumb : $thumb,
+            'large'  => (strpos($img, 'http://') === false) ? $domain.'/'.$img : $img
         ];
     }
 }
@@ -152,8 +142,6 @@ if (! function_exists('curl_request')) {
             curl_close($curl);
             return FALSE;
         }else{
-            // 解决windows 服务器 BOM 问题
-            $response = trim($response,chr(239).chr(187).chr(191));
             $response = json_decode($response, true);
         }
 

@@ -26,17 +26,17 @@ class Invoice
 
      public static function getContentList()
      {
-         $data = [];
          if ($model = ShopConfig::findByCode('invoice_content')) {
 
              $model = explode("\n", str_replace("\r", '', $model));
-	     
+
+             $data = [];
              for($i = 0; $i < count($model); $i++){
                  $data[$i]['id'] = $i + 1;
                  $data[$i]['name'] = $model[$i];
              }
+             return BaseModel::formatBody(['contents' => $data]);
          }
-	 return BaseModel::formatBody(['contents' => $data]);
      }
 
      public static function getStatus()

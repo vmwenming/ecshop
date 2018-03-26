@@ -26,7 +26,7 @@ $allow_suffix = array('gif', 'jpg', 'png', 'jpeg', 'bmp');
 if ($_REQUEST['act']== 'list')
 {
     /* 检查权限 */
-    admin_priv('h5_setting');
+    admin_priv('mobile_setting');
     $smarty->assign('ur_here', $_LANG['h5_setting']);
     $auth_sql = 'SELECT * FROM ' . $GLOBALS['ecs']->table('shop_config') . ' WHERE code = "authorize"';
     $auth = $GLOBALS['db']->getRow($auth_sql);
@@ -79,10 +79,7 @@ if ($_REQUEST['act']== 'list')
 
     assign_query_info();
     $flash_dir = ROOT_PATH . 'data/flashdata/';
-    $api_url = get_h5_api_host(); 
-    
-    $smarty->assign('api_url', $api_url);
-    $smarty->assign('error_msg', $_REQUEST['error_msg']);
+
     $smarty->assign('playerdb', $playerdb);
     $smarty->assign('group_list',$grouplist);
     $smarty->display('h5_config.html');
@@ -396,20 +393,6 @@ elseif ($_REQUEST['act'] == 'edit')
         $links[] = array('text' => $_LANG['go_url'], 'href' => 'h5_setting.php?act=list');
         sys_msg($_LANG['edit_ok'], 0, $links);
     }
-}
-elseif ($_REQUEST['act'] == 'checkapi')
-{
-    $result = test_api(); 
-    $links[] = array('text' => "上一页", 'href' => 'h5_setting.php?act=list');
-    if($result){
-        $error_msg = "APPSERVER配置OK   \n" ;       
-    }
-    else
-    {
-        $error_msg = "APPSERVER报错，请检查配置   \n";
-    }
-    ecs_header("Location: h5_setting.php?act=list&error_msg=".$error_msg);
-    
 }
 
 function get_flash_xml()
@@ -837,59 +820,6 @@ function get_params(){
                             'code' => 'mch_key',
                             'value' => '',
                         ),
-                    )
-                ),
-            ),
-        ),
-        2 => array(
-            'name' => '支付宝wap支付',
-            'code' => 'alipaywap',
-            'items' => array(
-                0 => array(
-                    'title' => '支付宝手机网站支付',
-                    'submit' => '?act=post',
-                    'url' => '',
-                    'type' => 'payment',
-                    'name' => '支付宝手机网站支付',
-                    'description' => '支付宝支付',
-                    'code' => 'alipay.wap',
-                    'vars' => array(
-                        0 => array(
-                            'type' => 'radio',
-                            'name' => '是否开启',
-                            'code' => 'status',
-                            'value' => '',
-                        ),
-                        1 => array(
-                            'type' => 'text',
-                            'name' => 'Partner_ID',
-                            'code' => 'partner_id',
-                            'value' => '',
-                        ),
-                        2 => array(
-                            'type' => 'text',
-                            'name' => 'Seller_ID',
-                            'code' => 'seller_id',
-                            'value' => '',
-                        ),
-                        3 => array(
-                            'type' => 'text',
-                            'name' => 'Private_Key',
-                            'code' => 'private_key',
-                            'value' => '',
-                        ),
-                        4 => array(
-                            'type' => 'text',
-                            'name' => 'Public_Key',
-                            'code' => 'public_key',
-                            'value' => '',
-                        ),
-                        // 5 => array(
-                        //     'type' => 'text',
-                        //     'name' => 'Cert',
-                        //     'code' => 'cert',
-                        //     'value' => '',
-                        // ),
                     )
                 ),
             ),

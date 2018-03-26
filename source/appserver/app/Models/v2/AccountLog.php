@@ -61,12 +61,9 @@ class AccountLog extends BaseModel
      * @param   int     $change_type    变动类型：系统
      * @return  boolean
      */
-    public static function logAccountChange($user_money = 0, $frozen_money = 0, $rank_points = 0, $pay_points = 0, $change_desc = '', $change_type = 99, $uid = false)
+    public static function logAccountChange($user_money = 0, $frozen_money = 0, $rank_points = 0, $pay_points = 0, $change_desc = '', $change_type = 99)
     {
-        if (!$uid) {
-            $uid = Token::authorization();
-        }
-        
+        $uid = Token::authorization();
         $flag = 0;
         /* 更新用户信息 */
         if($member = Member::where('user_id', $uid)->first()){

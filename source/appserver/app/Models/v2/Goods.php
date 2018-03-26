@@ -20,12 +20,12 @@ class Goods extends BaseModel
     protected $guarded = [];
 
     protected $appends = [
-                          'id', 'category', 'brand', 'shop', 'sku', 'default_photo', 'photos', 'name', 'price', 'current_price', 'discount', 'sales_count','score','good_stock',
+                          'id', 'category', 'brand', 'shop', 'sku', 'default_photo', 'photos', 'name', 'price', 'current_price', 'sales_count','score','good_stock',
                           'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at'
                          ];
 
     protected $visible = [
-                          'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos','sku', 'name', 'price', 'current_price', 'discount', 'is_shipping', 'promos','stock','properties','sales_count', 'attachments','goods_desc','score','comments','good_stock','comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at'
+                          'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos','sku', 'name', 'price', 'current_price','is_shipping', 'promos','stock','properties','sales_count', 'attachments','goods_desc','score','comments','good_stock','comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at'
                          ];
 
     // protected $with = [];
@@ -57,24 +57,6 @@ class Goods extends BaseModel
     }
 
     /**
-     * 首页商品列表
-     */    
-    public static function getHomeList()
-    {
-        return self::formatBody([
-            'hot_products'  => count(self::getRecommendGoods('is_hot')) == 0 ? null : self::getRecommendGoods('is_hot'),
-            'recently_products'  => count(self::getRecommendGoods('is_new')) == 0 ? null : self::getRecommendGoods('is_new'),
-            'good_products' => count(self::getRecommendGoods('is_best')) == 0 ? null : self::getRecommendGoods('is_best'),
-        ]);
-    }
-
-    public static function getRecommendGoods($type)
-    {
-        $model = self::where(['is_delete' => 0, 'is_on_sale' => 1, 'is_alone_sale' => 1]);
-        return $model->where($type, 1)->orderBy('sort_order')->orderBy('last_update', 'desc')->with('properties')->get();
-    }
-
-    /**
      * 商品列表
      * @param  array  $attributes [description]
      * @return [type]             [description]
@@ -82,6 +64,7 @@ class Goods extends BaseModel
     public static function getList(array $attributes)
     {
         extract($attributes);
+
         $prefix = DB::connection('shop')->getTablePrefix();
 
         //全站商品
@@ -99,7 +82,7 @@ class Goods extends BaseModel
         }
 
         if (isset($brand) && $brand) {
-            $model->where('brand_id', $brand);
+            $model->where('brand_id', Brand::getBrandById($brand));
         }
 
         if (isset($category) && $category) {
@@ -107,8 +90,6 @@ class Goods extends BaseModel
                 $query->whereIn('goods.cat_id', GoodsCategory::getCategoryIds($category));
             });
         }
-	
-	$total = $model->count();
 
         if (isset($sort_key)) {
 
@@ -137,7 +118,11 @@ class Goods extends BaseModel
                     break;
 
                 case self::POPULAR:
-                    $model->orderBy('click_count', $sort);
+                    if (isset($keyword) || isset($category)) {
+                        $model->orderBy('click_count', $sort);
+                    } else {
+                        $model->where('is_best', 1)->orderBy('sort_order', $sort)->orderBy('last_update', $sort);
+                    }
                     break;
 
                 case self::CREDIT:
@@ -146,20 +131,26 @@ class Goods extends BaseModel
                         ->leftJoin('comment', 'goods.goods_id', '=', 'comment.id_value')
                         ->groupBy('goods.goods_id')
                         ->orderBy('goods_rank_rate', $sort);
-			
-			$total = count($model->get()->toArray());
                     break;
-		    
-		case self::SALE:		
-		   $model->select('goods.*',DB::raw('sum('.$prefix.'order_goods.goods_number) AS total_sales'))
+
+                case self::SALE:
+                    if (isset($keyword) || isset($category)) {
+                        $model->select('goods.*',DB::raw('sum('.$prefix.'order_goods.goods_number) AS total_sales'))
                             ->leftJoin('order_goods', 'goods.goods_id', '=', 'order_goods.goods_id')
                             ->groupBy('order_goods.goods_id')
                             ->orderBy('total_sales', $sort);
-                    $total = count($model->get()->toArray());
+
+                    } else {
+                        $model->where('is_hot', 1)->orderBy('sort_order', $sort)->orderBy('virtual_sales', $sort);
+                    }
                     break;
 
                 case self::DATE:
-		    $model->orderBy('add_time', $sort);
+                    if (isset($keyword) || isset($category)) {
+                        $model->orderBy('add_time', $sort);
+                    } else {
+                        $model->where('is_new', 1)->orderBy('sort_order', $sort)->orderBy('last_update', $sort);
+                    }
                     break;
 
                 default:
@@ -169,8 +160,16 @@ class Goods extends BaseModel
         } else {
             $model->orderBy('sort_order', 'DESC');
         }
-	
-	$data = $model
+
+        // TODO : 同步
+        if ($sort_key == self::CREDIT || $sort_key == self::SALE || $sort_key == self::DATE) {
+            $data = $model->get()->toArray();
+            $total = count($data);
+        } else {
+            $total = $model->count();
+        }
+
+        $data = $model
             ->with('properties')
             ->paginate($per_page)->toArray();
 
@@ -254,14 +253,11 @@ class Goods extends BaseModel
         if (!$data->is_on_sale) {
             return self::formatError(self::BAD_REQUEST, trans('message.good.off_sale'));
         }
-	// $current_price = UserRank::getMemberRankPriceByGid($product);
+	$current_price = UserRank::getMemberRankPriceByGid($product);
+
         $data['promos'] = FavourableActivity::getPromoByGoods($product,$data->cat_id, $data->brand_id);
 
-//        if ($data->promote_price == 0) {
-//            $current_price = UserRank::getMemberRankPriceByGid($product);
-//            return self::formatBody(['product' => array_merge($data->toArray(), ['current_price' => $current_price])]);
-//        }
-        return self::formatBody(['product' => $data->toArray()]);
+        return self::formatBody(['product' => array_merge($data->toArray(), ['current_price' => $current_price])]);
     }
 
 
@@ -371,44 +367,12 @@ class Goods extends BaseModel
 
     public function getCurrentpriceAttribute()
     {
-        $promote_price = self::bargain_price($this->promote_price, $this->promote_start_date, $this->promote_end_date);
-        if (!empty($promote_price)) {
-            return $promote_price;
-        }
-	
-	$user_price = UserRank::getMemberRankPriceByGid($this->goods_id);
-        // $user_rank = UserRank::getUserRankByUid();
-        // $user_price = MemberPrice::getMemberPriceByUid($user_rank['rank_id'], $this->goods_id);
-
-        if (!empty($user_price)) {
-            return $user_price;
-        }
-
-        $current_price = UserRank::getMemberRankPriceByGid($this->goods_id);
-	
-        return self::price_format($current_price, false);
+        return $this->shop_price;
     }
-    public function getDiscountAttribute()
-    {
-        $price = self::bargain_price($this->promote_price, $this->promote_start_date, $this->promote_end_date);
-        if ($price > 0) {
-            return [
-                "price"         => $price,                                  // 促销价格
-                "start_at"      => $this->promote_start_date,               // 开始时间
-                "end_at"        => $this->promote_end_date,                 // 结束时间
-            ];
 
-        } else {
-            return null;
-        }
-    }
     public function getShareUrlAttribute()
     {
-        $uid = Token::authorization();
-        if ($uid) {
-            return config('app.shop_h5').'/?u=' .$uid. '#/product/?product=' . $this->goods_id;
-        }
-        return config('app.shop_h5').'/#/product/?product='.$this->goods_id;
+        return config('app.shop_url').'/goods.php?id='.$this->goods_id;
     }
 
     public function getIslikedAttribute()
@@ -418,8 +382,8 @@ class Goods extends BaseModel
 
     public function getSalescountAttribute()
     {
-        return OrderGoods::getSalesCountById($this->goods_id);
-        //return $this->virtual_sales;
+        // return OrderGoods::getSalesCountById($this->goods_id);
+        return $this->virtual_sales;
     }
     public function getCommentcountAttribute()
     {
@@ -427,22 +391,21 @@ class Goods extends BaseModel
     }
     public function getPhotosAttribute()
     {
-//        $goods =  Goods::where('goods_id', $this->goods_id)->first();
-//
-//        $goods_images = formatPhoto($goods->goods_img, $goods->goods_thumb);
-//
-//        $arr = GoodsGallery::getPhotosById($this->goods_id);
-//
-//        if (!empty($goods_images)) {
-//            array_unshift($arr, $goods_images);
-//        }
-//
-//        if (empty($arr)) {
-//            return null;
-//        }
-//
-//        return $arr;
-        return GoodsGallery::getPhotosById($this->goods_id);
+        $goods =  Goods::where('goods_id', $this->goods_id)->first();
+
+        $goods_images = formatPhoto($goods->goods_img, $goods->goods_thumb);
+        
+        $arr = GoodsGallery::getPhotosById($this->goods_id);
+
+        if (!empty($goods_images)) {
+            array_unshift($arr, $goods_images);
+        }
+
+        if (empty($arr)) {
+            return null;
+        }
+
+        return $arr;
     }
 
     public function getDefaultPhotoAttribute()
@@ -503,18 +466,27 @@ class Goods extends BaseModel
         }
         //取得商品促销价格列表
         /* 取得商品信息 */
+        // $sql = "SELECT g.promote_price, g.promote_start_date, g.promote_end_date, ".
+        //             "IFNULL(mp.user_price, g.shop_price * '" . $_SESSION['discount'] . "') AS shop_price ".
+        //        " FROM " .$GLOBALS['ecs']->table('goods'). " AS g ".
+        //        " LEFT JOIN " . $GLOBALS['ecs']->table('member_price') . " AS mp ".
+        //                "ON mp.goods_id = g.goods_id AND mp.user_rank = '" . $_SESSION['user_rank']. "' ".
+        //        " WHERE g.goods_id = '" . $goods_id . "'" .
+        //        " AND g.is_delete = 0";
+        // $goods = $GLOBALS['db']->getRow($sql);
         $goods = Goods::where('goods.goods_id',$goods_id)->where('goods.is_delete',0)->leftJoin('member_price',function($query){
             $query->on('member_price.goods_id', '=', 'goods.goods_id');
         })->first(['goods.promote_price','goods.promote_start_date','goods.promote_end_date','member_price.user_price']);
-	
-	$member_price = UserRank::getMemberRankPriceByGid($goods_id);
-	$user_rank = UserRank::getUserRankByUid();
-	$user_price = MemberPrice::getMemberPriceByUid($user_rank['rank_id'],$goods_id);
-        // $goods['user_price'] = $user_price;
+        $member_price = UserRank::getMemberRankPriceByGid($goods_id);
+        $uid = Token::authorization();
+        $user_rank = Member::where('user_id',$uid)->value('user_rank');
+
+        $user_price = MemberPrice::getMemberPriceByUid($user_rank,$goods_id);
+        $goods['user_price'] = $user_price;
         $goods['shop_price'] = isset($user_price) ? $user_price : $member_price;
         /* 计算商品的促销价格 */
-        if ($goods->promote_price > 0) {
-            $promote_price = self::bargain_price($goods->promote_price, $goods->promote_start_date, $goods->promote_end_date);
+        if (is_array($goods) && array_key_exists('promote_price',$goods) &&$goods['promote_price'] > 0) {
+            $promote_price = self::bargain_price($goods['promote_price'], $goods['promote_start_date'], $goods['promote_end_date']);
         }else{
             $promote_price = 0;
         }
@@ -831,12 +803,7 @@ class Goods extends BaseModel
             // 查询用户有多少积分
             $scale = ShopConfig::findByCode('integral_scale');
             $total_integral = $good['integral'] * $amount;
-
-            if ($total_integral) {
-                $flow_points = $total_integral / ($scale / 100);
-            } else {
-                $flow_points = 0;
-            }
+            $flow_points = $total_integral / ($scale / 100);
             
             $user_points = $user_info['pay_points']; // 用户的积分总数
 
@@ -857,7 +824,7 @@ class Goods extends BaseModel
         {
             $bonus = BonusType::bonus_info($order['bonus_id']);
 
-            if (empty($bonus) || $bonus['user_id'] != $user_id || $bonus['order_id'] > 0 || $bonus['min_goods_amount'] > $goods_price * $amount)
+            if (empty($bonus) || $bonus['user_id'] != $user_id || $bonus['order_id'] > 0 || $bonus['min_goods_amount'] > Cart::cart_amount(true, $flow_type))
             {
                 $order['bonus_id'] = 0;
             }
@@ -866,9 +833,10 @@ class Goods extends BaseModel
         /* 订单中的商品 */
 
         /* 检查商品总额是否达到最低限购金额 */
-	if ($flow_type == Cart::CART_GENERAL_GOODS && $goods_price < ShopConfig::findByCode('min_goods_amount')) // Cart::cart_amount(true, Cart::CART_GENERAL_GOODS)
+        if ($flow_type == Cart::CART_GENERAL_GOODS && Cart::cart_amount(true, Cart::CART_GENERAL_GOODS) < ShopConfig::findByCode('min_goods_amount'))
         {
             return self::formatError(self::BAD_REQUEST,trans('message.good.min_goods_amount'));
+            // show_message(sprintf($_LANG['goods_amount_not_enough'], price_format($_CFG['min_goods_amount'], false)));
         }
         /* 收货人信息 */
         $order['consignee'] = $consignee_info->consignee;
@@ -877,9 +845,6 @@ class Goods extends BaseModel
         $order['zipcode'] = $consignee_info->zipcode;
         $order['district'] = $consignee_info->district;
         $order['address'] = $consignee_info->address;
-        $order['country'] = $consignee_info->country;
-        $order['province'] = $consignee_info->province;
-        $order['city'] = $consignee_info->city;
 
        /* 判断是不是实体商品 */
         /* 统计实体商品的个数 */
@@ -890,10 +855,12 @@ class Goods extends BaseModel
 
         if(isset($is_real_good))
         {
+            // $sql="SELECT shipping_id FROM " . $ecs->table('shipping') . " WHERE shipping_id=".$order['shipping_id'] ." AND enabled =1";
             $shipping_is_real = Shipping::where('shipping_id',$order['shipping_id'])->where('enabled',1)->first();
             if(!$shipping_is_real)
             {
-                return self::formatError(self::BAD_REQUEST, '您必须选定一个配送方式');
+                return self::formatError(self::BAD_REQUEST,trans('message.good.min_goods_amount'));
+               // show_message($_LANG['flow_no_shipping']);
             }
         }
         /* 订单中的总额 */

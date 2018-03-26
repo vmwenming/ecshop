@@ -1,5 +1,4 @@
 <?php
-//
 
 return [
     //HTTP响应头

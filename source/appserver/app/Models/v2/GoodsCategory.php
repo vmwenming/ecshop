@@ -18,7 +18,7 @@ class GoodsCategory extends BaseModel {
     protected $table      = 'category';
     public    $timestamps = false;
 
-    protected $with = [];
+    protected $with = ['categories'];
     
     protected $guarded = [];
 
@@ -64,15 +64,13 @@ class GoodsCategory extends BaseModel {
         if($model = GoodsCategory::where('cat_id', $id)->where('is_show', 1)->orderBy('cat_id', 'ASC')->first())
         {
             $ids = GoodsCategory::where('parent_id', $id)->where('is_show', 1)->orderBy('cat_id', 'ASC')->lists('cat_id')->toArray();
-            if (is_array($ids)) {
-                $moreids = GoodsCategory::whereIn('parent_id', $ids)->where('is_show', 1)->orderBy('cat_id', 'ASC')->lists('cat_id')->toArray();
-                @array_merge($ids, $moreids);
-            }
+
             @array_push($ids, $model->cat_id);
 
             return $ids;
         }
         return [0];
+       
     }
 
     private static function getParentCategories($parent_id)

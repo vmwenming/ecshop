@@ -1,5 +1,4 @@
 <?php
-//
 
 
 /**
@@ -19,7 +18,6 @@
  */
 namespace App\Services\Payment\wxpay;
 use App\Services\Payment\wxpay\TenpayHttpClient;
-use Log;
 
 class WxPay {
 
@@ -175,6 +173,7 @@ class WxPay {
 
     //提交预支付
     function sendPrepay($packageParams){
+
         $prepayid = null;
 
         $smlStr = $this->arrayToXml($packageParams);
@@ -191,13 +190,10 @@ class WxPay {
         }
 
         if($res['return_code'] == 'FAIL') {
-            // throw new \Exception("提交预支付交易单失败:{$res['return_msg']}");
-            Log::error("提交预支付交易单失败:{$res['return_msg']}");
+            throw new \Exception("提交预支付交易单失败:{$res['return_msg']}");
         }
 
-        // throw new \Exception("提交预支付交易单失败，{$res['err_code']}:{$res['err_code']}");
-        // $res = json_encode($res);
-        // Log::error("提交预支付交易单失败，{$res}");
+        throw new \Exception("提交预支付交易单失败，{$res['err_code']}:{$res['err_code']}");
     }
 
     /**

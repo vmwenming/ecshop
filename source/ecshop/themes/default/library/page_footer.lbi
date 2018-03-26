@@ -34,7 +34,6 @@
       {if $stats_code}
       <div >{$stats_code}</div>
       {/if}
-      <div>{$lang.icp_number}:<a href="http://www.miibeian.gov.cn/" target="_blank">{$icp_number}</a></div>
     </div>
   <div class="clear10"></div>
 </div>

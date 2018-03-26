@@ -13,8 +13,6 @@ use Log;
 use App\Services\Shopex\Erp;
 use App\Services\Shopex\Authorize;
 use App\Services\Payment\Teegon\TeegonService;
-use App\Services\Payment\AlipayWap\AlipayWapSubmit;
-use App\Services\Payment\AlipayWap\AlipayWapNotify;
 
 class Payment extends BaseModel {
 
@@ -31,17 +29,15 @@ class Payment extends BaseModel {
         
         $model = null;
         if (isset($userAgent['Platform']) && strtolower($userAgent['Platform']) == 'wechat') {
-            $response = Authorize::info();    
-            if ($response['result'] == 'success') 
-            {
+            $response = Authorize::info();
+            if ($response['result'] == 'success') {
                 // 旗舰版授权...
-                if ($response['info']['authorize_code'] == 'NDE') 
-                {
+                if ($response['info']['authorize_code'] == 'NDE') {
                     $model = self::where(['type' => 'payment', 'status' => 1, 'code' => 'wxpay.web'])->get()->toArray();
                 } 
 
                 //天工收银
-                if ($arr = Pay::where('pay_code', 'yunqi')->where('enabled', '1')->first()) {
+                if ($arr = Pay::where('pay_code', 'yunqi')->where('enabled', '1')->first()) {                
                     $arr = [
                         'name' => '天工收银',
                         'code' => 'teegon.wap',
@@ -51,42 +47,15 @@ class Payment extends BaseModel {
                     array_push($model, $arr);
                 }
 
-                //天工收银
-                // if ($arr = Pay::where('pay_code', 'balance')->where('enabled', '1')->first()) {
-                //     $arr = [
-                //         'name' => '余额支付',
-                //         'code' => 'balance',
-                //         'desc' => '余额支付'
-                //     ];
-
-                //     array_push($model, $arr);
-                // }
-
                 // 货到付款
                 if ($arr = self::where(['type' => 'payment', 'status' => 1, 'code' => 'cod.app'])->first()) {
                     $arr = $arr->toArray();
                     array_push($model, $arr);
                 }
 
-                 // 支付宝wap支付
-                if ($arr = self::where(['type' => 'payment', 'status' => 1, 'code' => 'alipay.wap'])->first()) {
-                    $arr = $arr->toArray();
-                    array_push($model, $arr);
-                } 
-
             }
         } else {
             $model = self::where(['type' => 'payment', 'status' => 1])->where('code', '!=', 'wxpay.web')->get()->toArray();
-
-                // if ($arr = Pay::where('pay_code', 'balance')->where('enabled', '1')->first()) {
-                //     $arr = [
-                //         'name' => '余额支付',
-                //         'code' => 'balance',
-                //         'desc' => '余额支付'
-                //     ];
-
-                //     array_push($model, $arr);
-                // }            
         }
 
 
@@ -109,7 +78,7 @@ class Payment extends BaseModel {
         if ($code == 'teegon.wap') {
 
             if (!isset($channel) || empty($channel)) {
-                return self::formatError(self::BAD_REQUEST, trans('message.payment.channel')); // 选择支付方式
+                return self::formatError(self::BAD_REQUEST, trans('message.teegon.channel')); // 选择支付方式
             }
 
             $result = Pay::checkConfig('yunqi');
@@ -162,84 +131,19 @@ class Payment extends BaseModel {
         }
 
         // ----------------------------
-        //-----------  支付宝手机网站支付  -----------//
-        if ($code == 'alipay.wap') {
+        
+        $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
 
-            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
-
-            if (!$payment) {
-                return self::formatError(self::NOT_FOUND);
-            }
-            
-            $config = self::checkConfig(['partner_id', 'seller_id', 'private_key'], $payment);
-
-            if (!$config) {
-                return self::formatError(self::UNKNOWN_ERROR);
-            }
-            
-            $parameter = array(
-                "service"         => 'alipay.wap.create.direct.pay.by.user',
-                "partner"         => $config['partner_id'],
-                "seller_id"       => $config['seller_id'],
-                "payment_type"    => '1',
-                "notify_url"      => url("/v2/order.notify.alipay.wap"),
-                "return_url"      => $referer,
-                "_input_charset"  => 'utf-8',
-                "out_trade_no"    => $order->order_sn,
-                "subject"         => $shop_name,
-                "total_fee"       => number_format($order->order_amount, 2, '.', ''),
-                // "show_url"        => $show_url,
-                "app_pay"         => "Y",//启用此参数能唤起钱包APP支付宝
-                "body"            => $shop_name,                    
-            );
-
-            //建立请求
-            $alipaySubmit = new AlipayWapSubmit($config['private_key']);
-            $html_text = $alipaySubmit->buildRequestForm($parameter, "get", "确认");
-
-            return self::formatBody([
-                'order' => $order, 
-                'alipay' => ['html' => $html_text],
-            ]);
-            // echo $html_text;
+        if (!$payment) {
+            return self::formatError(self::NOT_FOUND);
         }
 
         if ($code == 'cod.app') {
-            $order->pay_time = time();
             $order->pay_status = 2;
             $order->save();
             return self::formatBody(['order' => $order]);
         }
-
-        if ($code == 'balance') {
-
-            $user_info = Member::user_info($uid); 
-
-            /* 用户帐户余额是否足够 */
-            if ($order->order_amount > $user_info['user_money'] + $user_info['credit_line']){    
-                return self::formatError(self::BAD_REQUEST, trans('message.payment.balance'));
-            }
-
-            $order->surplus = min($order->order_amount, $user_info['user_money'] + $user_info['credit_line']);
-
-            $order->pay_time = time();
-            $order->pay_status = 2;
-            $order->save();    
-
-            $pay_order = '支付订单 %s';
-
-            Member::logAccountChange($uid, $order->surplus * (-1), 0, 0, 0, sprintf($pay_order, $order->sn));
-            return self::formatBody(['order' => $order]);
-        }
         if ($code == 'alipay.app') {
-
-
-            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
-
-            if (!$payment) {
-                return self::formatError(self::NOT_FOUND);
-            }
-
             $config = self::checkConfig(['partner_id', 'seller_id', 'private_key'], $payment);
             if (!$config) {
                 return self::formatError(self::UNKNOWN_ERROR);
@@ -268,12 +172,6 @@ class Payment extends BaseModel {
         }
 
         if ($code == 'wxpay.app') {
-
-            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
-
-            if (!$payment) {
-                return self::formatError(self::NOT_FOUND);
-            }            
             $config = self::checkConfig(['app_id', 'app_secret', 'mch_id', 'mch_key'], $payment);
             if (!$config) {
                 return self::formatError(self::UNKNOWN_ERROR);
@@ -349,12 +247,7 @@ class Payment extends BaseModel {
             return self::formatBody(['order' => $order, 'wxpay' => $body]);
         }
 
-        if ($code == 'wxpay.web' || $code == 'wxpay.wxa' ) {
-            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
-
-            if (!$payment) {
-                return self::formatError(self::NOT_FOUND);
-            }            
+        if ($code == 'wxpay.web') {
             $config = self::checkConfig(['app_id', 'app_secret', 'mch_id', 'mch_key'], $payment);
             if (!$config) {
                 return self::formatError(self::UNKNOWN_ERROR);
@@ -364,13 +257,6 @@ class Payment extends BaseModel {
             $wxpay->init($config['app_id'], $config['app_secret'], $config['mch_key']);
             $nonce_str = str_random(32);
             $time_stamp = (string)time();
-            if($code == 'wxpay.wxa'){
-                $notify_url = url('/v2/order.notify.wxpay.wxa');    
-            }
-            else{
-                $notify_url = url('/v2/order.notify.wxpay.web');       
-            }
-            
 
             $inputParams = [
 
@@ -404,7 +290,7 @@ class Payment extends BaseModel {
                 'spbill_create_ip' => app('request')->ip(),
 
                 //接受微信支付异步通知回调地址
-                'notify_url' => $notify_url,
+                'notify_url' => url('/v2/order.notify.wxpay.web'),
 
                 //交易类型:JSAPI,NATIVE,APP
                 'trade_type' => 'JSAPI'
@@ -442,11 +328,6 @@ class Payment extends BaseModel {
         }
 
         if ($code == 'unionpay.app') {
-            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
-
-            if (!$payment) {
-                return self::formatError(self::NOT_FOUND);
-            }            
             $config = self::checkConfig(['mer_id', 'cert_pwd'], $payment);
             $signCert = Cert::where('config_id',$payment->id)->value('file');
 
@@ -508,7 +389,6 @@ class Payment extends BaseModel {
                     $order->save();
 
                     OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
-                    AffiliateLog::affiliate($order->order_id);
                     Erp::order($order->order_sn);
 
                     Log::info('notify_order:'. json_encode($order));
@@ -533,7 +413,7 @@ class Payment extends BaseModel {
             return false;
         }
 
-        if ($code == 'alipay.app' || $code == 'alipay.wap') {
+        if ($code == 'alipay.app') {
 
             $out_trade_no = isset($_POST['out_trade_no']) ? $_POST['out_trade_no'] : 0;
 
@@ -568,19 +448,18 @@ class Payment extends BaseModel {
                 if($_POST['trade_status'] == 'TRADE_FINISHED') {
                     //修改订单状态
                     $order->pay_status = Order::PS_PAYED;
-            //插入付款时间
-                $order->pay_time = time();
+		    //插入付款时间
+	            $order->pay_time = time();
                     $order->save();
                     OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '支付宝手机支付');
                 }
                 else if ($_POST['trade_status'] == 'TRADE_SUCCESS') {
                     //修改订单状态
                     $order->pay_status = Order::PS_PAYED;
-            //插入付款时间
+		    //插入付款时间
                     $order->pay_time = time();
                     $order->save();
                     OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '支付宝手机支付');
-                    AffiliateLog::affiliate($order->order_id);
                     Erp::order($order->order_sn);
 
                 }else
@@ -654,7 +533,6 @@ class Payment extends BaseModel {
                     $order->pay_status = Order::PS_PAYED;
                     $order->save();
                     OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '微信手机支付');
-                    AffiliateLog::affiliate($order->order_id);
                     Erp::order($order->order_sn);
                 } else {
                     Log::error('后台通知失败');
@@ -669,7 +547,7 @@ class Payment extends BaseModel {
             return true;
         }
 
-        if ($code == 'wxpay.web'|| $code == 'wxpay.wxa') {
+        if ($code == 'wxpay.web') {
 
             if (version_compare(PHP_VERSION, '5.6.0', '<')) {
                 if (!empty($GLOBALS['HTTP_RAW_POST_DATA'])) {
@@ -722,13 +600,11 @@ class Payment extends BaseModel {
                     $transaction_id = $resHandler->getParameter("transaction_id");
 
                     $order->pay_status = Order::PS_PAYED;
-                    //插入付款时间
+		            //插入付款时间
                     $order->pay_time = time();
                     $order->save();
                     OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '微信手机支付');
-                    AffiliateLog::affiliate($order->order_id);
                     Erp::order($order->order_sn);
-                    Log::error('微信web支付成功');
                 } else {
                     Log::error('后台通知失败');
                 }
@@ -778,11 +654,10 @@ class Payment extends BaseModel {
 
                 //业务代码
                 $order->pay_status = Order::PS_PAYED;
-                //插入付款时间
+		        //插入付款时间
                 $order->pay_time = time();
                 $order->save();
                 OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '银联手机支付');
-                AffiliateLog::affiliate($order->order_id);
                 Erp::order($order->order_sn);
             }
             echo 'success';

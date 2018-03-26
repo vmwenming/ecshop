@@ -1,5 +1,4 @@
 <?php
-//
 
 namespace App\Http\Controllers\v2;
 
@@ -42,8 +41,7 @@ class UserController extends Controller
             'device_id'     => 'string',
             'username'      => 'required|min:3|max:25|alpha_num',
             'email'         => 'required|email',
-            'password'      => 'required|min:6|max:20',
-            'invite_code'   => 'integer', 
+            'password'      => 'required|min:6|max:20'
         ];
 
         if($res = Features::check('signup.default'))
@@ -73,8 +71,7 @@ class UserController extends Controller
             'device_id'     => 'string',
             'password'      => 'required|min:6|max:20',
             'mobile'        => 'required|string',
-            'code'          => 'required|string|digits:6',
-            'invite_code'   => 'integer', 
+            'code'          => 'required|string|digits:6'
         ];
 
         if ($error = $this->validateInput($rules)) {
@@ -137,7 +134,7 @@ class UserController extends Controller
             'values'        => 'json',
             'nickname'      => 'string|max:25',
             'gender'        => 'integer|in:0,1,2',
-            'avatar_url'    => 'string'
+            'avatar_url'    => 'string  '
         ];
 
         if ($error = $this->validateInput($rules)) {
@@ -219,10 +216,9 @@ class UserController extends Controller
     {
         $rules = [
             'device_id'     => 'string',
-            'vendor'        => 'required|integer|in:1,2,3,4,5',
-            'access_token'  => 'string',
-            'js_code'       => 'string',
-            'open_id'       => 'string',
+            'vendor'        => 'required|integer|in:1,2,3,4',
+            'access_token'  => 'required|string',
+            'open_id'       => 'required|string',
         ];
 
         if ($error = $this->validateInput($rules)) {

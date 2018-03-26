@@ -23,7 +23,7 @@ require(dirname(__FILE__) . '/includes/init.php');
 if ($_REQUEST['act']== 'list')
 {
     /* 检查权限 */
-    admin_priv('lead');
+    admin_priv('lead_manage');
     $url_cur = $_SERVER['HTTP_REFERER'];
     $url_arr = explode('/admin',$url_cur);
     $smarty->assign('ur_here', $_LANG['lead_here']);

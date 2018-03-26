@@ -20,7 +20,6 @@
 		$scope.touchCancel = _touchCancel;
 
 		$scope.showPicker = false;
-		$scope.allowSave = true;
 		$scope.pickerData = [];
 		$scope.pickerRegions = [];
 		$scope.pickerRegionName = null;
@@ -72,17 +71,9 @@
 				return;
 			}
 
-			// 防止多次的保存
-			if ( $scope.allowSave ) {
-				$scope.allowSave = false;
-			} else {
-				return;
-			}
-
 			$scope.addressEditModel
 				.save(name, mobile, lastRegion.id, address)
 				.then(function (success) {
-					$scope.allowSave = true;
 					if (success) {
 						$scope.toast('保存成功');
 						$scope.goBack();

@@ -21,7 +21,9 @@ class Push extends BaseModel {
 
         $reg_time = Member::where('user_id', $uid)->value('reg_time');
 
-        $model = Push::where('message_type', 1)->where('created_at', '>', date('Y-m-d H:i:s', $reg_time))->orderBy('created_at','DESC');
+        $model = Push::where('status', 2)->where('message_type', 1)
+               ->where('created_at', '>', date('Y-m-d H:i:s', $reg_time))
+               ->orderBy('created_at','DESC');
 
         $total = $model->count();
 
@@ -38,7 +40,7 @@ class Push extends BaseModel {
 
         $uid = Token::authorization();
 
-        $model = Push::where('isPush', 1)->where('message_type', 2)->where('user_id', $uid)->orderBy('created_at','DESC');
+        $model = Push::where('status', 2)->where('message_type', 2)->where('user_id', $uid)->orderBy('created_at','DESC');
 
         $total = $model->count();
 
@@ -60,12 +62,13 @@ class Push extends BaseModel {
             switch ($type) {
                 //如果是给系统消息
                 case 1:
-                    $count = Push::where('message_type', 1)->where('created_at', '>', date('Y-m-d H:i:s', $after))->count();
+                    $count = Push::where('status', 2)->where('message_type', 1)
+                             ->where('created_at', '>', date('Y-m-d H:i:s', $after))->count();
                     break;
                 //如果是给订单消息　　
                 case 2:
                     if($uid = Token::authorization()){
-                         $count = Push::where('isPush', 1)->where('message_type', 2)->where('user_id', $uid)
+                         $count = Push::where('status', 2)->where('message_type', 2)->where('user_id', $uid)
                                 ->where('created_at', '>', date('Y-m-d H:i:s', $after))->count();
                     }else{
                          $count = 0;

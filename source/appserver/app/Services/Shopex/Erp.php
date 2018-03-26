@@ -14,16 +14,9 @@ class Erp
             return false;
         }
 
-        $certificate = unserialize($certificate_info);                    
-        $token = "";
-        if(isset($certificate['token']))
-        {
-            $token = $certificate['token'];
-        }
-        else{
-            return;
-        }        
-        
+        $certificate = unserialize($certificate_info);
+
+        $token = $certificate['token'];
 
         //获取物流信息参数
         $param = array(
@@ -45,7 +38,7 @@ class Erp
            return true;
         }
 
-        Log::error('订单号：' . $order_sn . ' 同步ERP失败');
+        Log::error('订单同步失败', $response);
 
         return false;
 

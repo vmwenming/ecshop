@@ -11,7 +11,6 @@
 
         var service = new APIEndpoint( $http, $q, $timeout, CacheFactory, 'APIProductService' );
         service.list = _list;
-        service.homeList = _homeList;
         service.accessoryList = _accessoryList;
         service.get = _get;
         service.like = _like;
@@ -26,13 +25,6 @@
                     return (res.data &&(ENUM.ERROR_CODE.OK == res.data.error_code)) ? res.data.products : null;
 
             });
-        }
-
-        function _homeList(params){
-            return this.fetch( '/v2/ecapi.home.product.list', params, false, function(res){
-                    return (res.data &&(ENUM.ERROR_CODE.OK == res.data.error_code)) ? res.data : null;
-
-            });            
         }
 
         function _accessoryList(params) {

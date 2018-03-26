@@ -1,5 +1,4 @@
 <?php
-//
 
 namespace App\Http\Controllers\v2;
 
@@ -114,6 +113,7 @@ class CartController extends Controller {
         }
 
         $response = Cart::checkout($this->validated);
+
         return $this->json($response);
     }
 

@@ -221,7 +221,6 @@ case 'create_config_file' :
         'SHOP_DB_PASSWORD' => $db_pass,
         'SHOP_DB_PREFIX' => $prefix,
         'SHOP_URL' => 'http://'.$_SERVER['HTTP_HOST'],
-        'SHOP_H5' => 'http://'.$_SERVER['HTTP_HOST'].'/h5',
         'TOKEN_SECRET' => md5(time() . mt_rand(0,1000))
         );
 
@@ -410,13 +409,6 @@ case 'do_others' :
     break;
 
 case 'done' :
-    if (file_exists(ROOT_PATH . 'data/install.lock')) { 
-        $step = 'error'; 
-        $err->add($_LANG['has_locked_installer']); 
-        $err_msg = implode(',', $err->get_all()); $smarty->assign('err_msg', $err_msg); 
-        $smarty->display('error.php'); 
-        break;
-    }
     if (!file_exists(ROOT_PATH . 'data/install.lock')){
         $result = deal_aftermath();
         clear_all_files();

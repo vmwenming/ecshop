@@ -82,12 +82,8 @@ class certificate
     * @return bool
     */
     function set_yunqi_account($data){
-        // $data['status'] = true;
-        if ($this->get_yunqi_account()) {
-            $sql = "UPDATE ".$GLOBALS['ecs']->table('shop_config')." set parent_id=2, type='hidden', value='".serialize($data)."' WHERE code='yunqi_account'";
-        }else{
-            $sql = "insert into ".$GLOBALS['ecs']->table('shop_config')." set parent_id=2,code='yunqi_account',type='hidden',value='".serialize($data)."'";
-        }
+        $data['status'] = true;
+        $sql = "insert into ".$GLOBALS['ecs']->table('shop_config')." set parent_id=2,code='yunqi_account',type='hidden',value='".serialize($data)."'";
         $GLOBALS['db']->query($sql,SILENT);
     }
 
@@ -436,15 +432,13 @@ class certificate
         }
         //激活云起物流 end
         //获取云起收银账号
-        /* 天工收银的key和secret改由客户后台填写  2017-09-08 15:00:00
         $yunqi_account = $this->get_yunqi_account();
         if(!$yunqi_account || !$yunqi_account['status']){
             $yqaccount_result = $this->yqaccount_appget();
             $yqaccount_result['status']=='success' and $this->set_yunqi_account(array('appkey'=>$yqaccount_result['data']['appkey'],'appsecret'=>$yqaccount_result['data']['appsecret'],'status'=>true));
-            */
             //安装云起收银
             $this->install_yqpayment();
-        // }
+        }
         //获取云起收银账号 end
     }
 

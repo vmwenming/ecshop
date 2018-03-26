@@ -25,6 +25,7 @@
                         var data = res.data.data;
                         return JSON.parse( XXTEA.decryptFromBase64(data, key) );
                     }
+
                 }
                 return null;
             });

@@ -33,7 +33,7 @@
                         {{goods.property}}
                     </div>
                     <div class="info-price">
-                        {{goods.price| currency:"￥"}}
+                        ￥{{goods.price}}
                     </div>
                     <div class="info-amount">
                         <div class="amount-button" ng-class="{active: goods.amount > 1}" ng-click="touchAmountSub(goods)">
@@ -58,7 +58,7 @@
                 全选
             </div>
             <div class="submit-total" ng-class="{active: selectedGoods && selectedGoods.length}">
-                <span class="total-price">{{selectedPrice| currency:"￥"}}</span>
+                ￥<span class="total-price">{{selectedPrice}}</span>
             </div>
             <div class="submit-button dark" ng-class="{active: selectedGoods && selectedGoods.length}" ng-click="touchSubmit()">
                 结算（{{selectedAmount}}）

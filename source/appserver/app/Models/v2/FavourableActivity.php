@@ -17,7 +17,7 @@ class FavourableActivity extends BaseModel {
 	const 	FAT_PRICE                 = 1; // 现金减免
 	const 	FAT_DISCOUNT              = 2; // 价格打折优惠
 
-	/* 优惠活动的优惠范围 */
+/* 优惠活动的优惠范围 */
 	const   FAR_ALL                   = 0; // 全部商品
 	const   FAR_CATEGORY              = 1; // 按分类选择
 	const   FAR_BRAND                 = 2; // 按品牌选择
@@ -27,14 +27,12 @@ class FavourableActivity extends BaseModel {
     {
         $data = [];
         $now = time();
-	
-	$cat_parent_id = Category::where('cat_id', $cat_id)->value('parent_id');	
 	$sql = '';
         $user_rank = UserRank::getUserRankByUid();
         if (!empty($user_rank)) {
             $sql = ' AND FIND_IN_SET(' . $user_rank['rank_id'] . ', `user_rank`)';
         }
-        $model = DB::connection('shop')->table('favourable_activity')->whereRaw('(`start_time` <= '.$now.' AND `end_time` >= '.$now.') AND (`act_range` = 0 OR (`act_range` = 1 AND FIND_IN_SET('.$cat_id.',`act_range_ext`) OR FIND_IN_SET('.$cat_parent_id.',`act_range_ext`)) OR (`act_range` = 2 AND FIND_IN_SET('.$brand_id.',`act_range_ext`)) OR (`act_range` = 3 AND FIND_IN_SET('.$goods_id.',`act_range_ext`)))' . $sql)->get();
+        $model = DB::connection('shop')->table('favourable_activity')->whereRaw('(`start_time` < '.$now.' AND `end_time` > '.$now.') AND (`act_range` = 0 OR (`act_range` = 1 AND FIND_IN_SET('.$cat_id.',`act_range_ext`)) OR (`act_range` = 2 AND FIND_IN_SET('.$brand_id.',`act_range_ext`)) OR (`act_range` = 3 AND FIND_IN_SET('.$goods_id.',`act_range_ext`)))' . $sql)->get();
 
         if (!empty($model)) {
 
@@ -61,9 +59,9 @@ class FavourableActivity extends BaseModel {
                 }
 
                 $data[$key]['name'] = $value->act_name;
-		$data[$key]['start_at'] = $value->start_time;
-                $data[$key]['end_at']   = $value->end_time;
             }
+
+            
         }
         return $data;
     }

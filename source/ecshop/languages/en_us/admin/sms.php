@@ -42,15 +42,10 @@ $_LANG['user_rand'] = 'Send short message by the user level';
 $_LANG['phone_notice'] = 'More than one phone number divided by DBC case comma.';
 $_LANG['msg'] = 'Message';
 $_LANG['msg_notice'] = '70 character at most';
-$_LANG['msg_forbidden'] = 'Do not include words like "test" in the content, or may be intercepted';
 $_LANG['send_date'] = 'Send at certain times';
 $_LANG['send_date_notice'] = 'Format is YYYY-MM-DD HH:II. If it is blank then send immediately.';
 $_LANG['back_send_history'] = 'Return to send history';
 $_LANG['back_charge_history'] = 'Return to charge history';
-$_LANG['sms_preview'] = 'SMS preview';
-$_LANG['notice0'] = 'Has been entered';
-$_LANG['notice1'] = 'character, about';
-$_LANG['notice2'] = 'messages, The actual length of the text message is based on the final result';
 
 /* Record query interface */
 $_LANG['start_date'] = 'Start date';
@@ -142,7 +137,6 @@ $_LANG['js_languages']['username_format_error'] = 'Username format is invalid.';
 $_LANG['js_languages']['domain_empty_error'] = 'Domain can\'t be blank.';
 $_LANG['js_languages']['domain_format_error'] = 'Domain format is invalid.';
 $_LANG['js_languages']['send_empty_error'] = 'Send phone number and send at least fill out a rating！';
-$_LANG['js_languages']['sms_empty_error'] = 'SMS content length is not empty';
 
 //--Send
 $_LANG['js_languages']['phone_empty_error'] = 'Please enter phone number.';

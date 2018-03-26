@@ -36,8 +36,8 @@ $exc = new exchange($ecs->table("role"), $db, 'role_id', 'role_name');
 if ($_REQUEST['act'] == 'logout')
 {
     /* 清除cookie */
-    setcookie('ECSCP[admin_id]',   '', 1, NULL, NULL, NULL, TRUE);
-    setcookie('ECSCP[admin_pass]', '', 1, NULL, NULL, NULL, TRUE);
+    setcookie('ECSCP[admin_id]',   '', 1);
+    setcookie('ECSCP[admin_pass]', '', 1);
 
     $sess->destroy_session();
 

@@ -6,9 +6,9 @@
     .module('app')
     .controller('SigninController', SigninController);
 
-    SigninController.$inject = ['$scope', '$http', '$window', '$location', '$state', '$rootScope', 'API', 'ENUM','ConfigModel'];
+    SigninController.$inject = ['$scope', '$http', '$window', '$location', '$state', '$rootScope', 'API', 'ENUM'];
 
-    function SigninController($scope, $http, $window, $location, $state, $rootScope, API, ENUM,ConfigModel) {
+    function SigninController($scope, $http, $window, $location, $state, $rootScope, API, ENUM) {
 
     	$scope.username = "";
     	$scope.password = "";
@@ -69,10 +69,7 @@
         }
 
         function _isWeixin() {
-
-            var config = ConfigModel.getConfig();
-            var wechat = config['wechat.web'];
-            return wechat && $rootScope.isWeixin();
+            return $rootScope.isWeixin();
         }
     }
 

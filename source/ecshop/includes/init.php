@@ -42,7 +42,7 @@ if (!file_exists(ROOT_PATH . 'data/install.lock') && !file_exists(ROOT_PATH . 'i
 @ini_set('session.use_trans_sid', 0);
 @ini_set('session.use_cookies',   1);
 @ini_set('session.auto_start',    0);
-@ini_set('display_errors',        0);
+@ini_set('display_errors',        1);
 
 if (DIRECTORY_SEPARATOR == '\\')
 {
@@ -264,8 +264,8 @@ if (!defined('INIT_NO_USERS'))
         {
             // 没有找到这个记录
            $time = time() - 3600;
-           setcookie("ECS[user_id]",  '', $time, '/', NULL, NULL, TRUE);
-           setcookie("ECS[password]", '', $time, '/', NULL, NULL, TRUE);
+           setcookie("ECS[user_id]",  '', $time, '/');
+           setcookie("ECS[password]", '', $time, '/');
         }
         else
         {

@@ -2,7 +2,7 @@
 
 {include file="pageheader.htm"}
 
-<form method="post" action="database.php?act=cleardata" name="clearForm" onsubmit="return confirmClear();">
+<form method="post" action="database.php?act=cleardata" name="clearForm">
 <div class="list-div" id="listDiv">
 {if !$yunqi_login}
 <table id="page-table" cellspacing="0">
@@ -21,14 +21,5 @@
 </center>
 </div>
 </form>
-<script type="text/javascript">
-	function confirmClear() {
-		if (confirm("{$lang.confirm_clear_demo}")) {
-			return true;
-		}else{
-			return false;
-		}
-	}
-</script>
 
 {include file="pagefooter.htm"}

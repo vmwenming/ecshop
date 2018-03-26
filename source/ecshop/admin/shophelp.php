@@ -77,7 +77,6 @@ if ($_REQUEST['act'] == 'add')
 {
     /* 权限判断 */
     admin_priv('shophelp_manage');
-    $_POST['id'] = intval($_POST['id']);
 
     /* 创建 html editor */
     create_html_editor('FCKeditor1');
@@ -102,7 +101,6 @@ if ($_REQUEST['act'] == 'insert')
 {
     /* 权限判断 */
     admin_priv('shophelp_manage');
-    $_POST['id'] = intval($_POST['id']);
 
     /* 判断是否重名 */
     $exc_article->is_only('title', $_POST['title'], $_LANG['title_exist']);
@@ -131,7 +129,6 @@ if ($_REQUEST['act'] == 'edit')
 {
     /* 权限判断 */
     admin_priv('shophelp_manage');
-    $_POST['id'] = intval($_POST['id']);
 
     /* 取文章数据 */
     $sql = "SELECT article_id,title, cat_id, article_type, is_open, author, author_email, keywords, content FROM " .$ecs->table('article'). " WHERE article_id='$_REQUEST[id]'";
@@ -154,7 +151,6 @@ if ($_REQUEST['act'] == 'update')
 {
     /* 权限判断 */
     admin_priv('shophelp_manage');
-    $_POST['id'] = intval($_POST['id']);
 
     /* 检查重名 */
     if ($_POST['title'] != $_POST['old_title'] )

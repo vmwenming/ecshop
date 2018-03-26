@@ -422,7 +422,6 @@ $_LANG['logout'] = '您已經成功的退出了。';
 $_LANG['username_empty'] = '用戶名為空';
 $_LANG['username_invalid'] = '用戶名 %s 含有敏感字符';
 $_LANG['username_exist'] = '用戶名 %s 已經存在';
-$_LANG['username_inexistent'] = '用戶名 %s 不存在';
 $_LANG['username_not_allow'] = '用戶名 %s 不允許註冊';
 $_LANG['confirm_register'] = '確認註冊';
 
@@ -439,7 +438,6 @@ $_LANG['passwd_question'] = '密碼提示問題';
 $_LANG['sel_question'] = '請選擇提示問題';
 $_LANG['passwd_answer'] = '密碼問題答案';
 $_LANG['passwd_balnk'] = '密碼中不能包含空格';
-$_LANG['phone_number_reg_check_fail'] = '手機號輸入錯誤或未註冊';
 
 /* 用戶中心默認頁面 */
 $_LANG['welcome_to'] = '歡迎您回到';

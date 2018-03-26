@@ -56,10 +56,7 @@ if (isset($set_modules) && $set_modules == TRUE)
     $modules[$i]['version'] = '1.0';
 
     /* 配置信息 */
-    $modules[$i]['config']  = array(
-        array('name' => 'appkey',           'type' => 'text',   'value' => ''),
-        array('name' => 'appsecret',        'type' => 'text',   'value' => ''),
-    );
+    $modules[$i]['config']  = array();
 
     return;
 }

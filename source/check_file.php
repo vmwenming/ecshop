@@ -8,11 +8,12 @@ set_time_limit(0);
 
 $extension = array('php','html','js');
 $dir = array('ecshop', 'appserver');
-$pre = '../../';
+$pre = './';
 
 echo('<meta charset="utf-8">');
 echo("<pre>");
 define('IN_ECS', true);
+// echo $pre.'ecshop/includes/cls_ecshop.php' ;exit;
 if (file_exists($pre.'ecshop/includes/cls_ecshop.php')) {
     require_once $pre.'ecshop/includes/cls_ecshop.php';
 }else{

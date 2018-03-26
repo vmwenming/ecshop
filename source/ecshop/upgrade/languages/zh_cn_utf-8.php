@@ -3,7 +3,7 @@
 /**
  * ECSHOP 升级程序语言文件
  * ============================================================================
-
+ * 版权所有 (C) 2005-2007 康盛创想（北京）科技有限公司，并保留所有权利。
  * 网站地址: http://www.ecshop.com
  * ----------------------------------------------------------------------------
  * 这是一个免费开源的软件；这意味着您可以在不用于商业目的的前提下对程序代码
@@ -20,7 +20,7 @@ $_LANG['readme_title']                =  'ECSHOP升级程序 第1步/共2步 说
 $_LANG['checking_title']                =  'ECShop升级程序 第2步/共2步 环境检测';
 $_LANG['check_system_environment']          = '检测系统环境';
 
-$_LANG['copyright']                     = '&copy; 2005-2018 <a href="http://www.ecshop.com" target="_blank">上海商派云起云计算技术有限公司</a>。保留所有权利。';
+$_LANG['copyright']                     = '&copy; 2005-2007 <a href="http://www.ecshop.com" target="_blank">康盛创想（北京）科技有限公司</a>。保留所有权利。';
 $_LANG['is_last_version']             = '您的ECSHOP已是最新版本，无需升级。';
 
 $_LANG['readme_page']                =  '说明页';

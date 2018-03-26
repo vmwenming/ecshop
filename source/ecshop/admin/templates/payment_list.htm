@@ -64,7 +64,11 @@
               {/if}
 
            {else}
-             <a href="payment.php?act=install&code={$module.code}">{$lang.install}</a>
+           {if $module.code=='yunqi'}
+           <a href="javascript:;" onclick="check_yunqi();">{$lang.install}</a>
+           {else}
+           <a href="payment.php?act=install&code={$module.code}">{$lang.install}</a>
+           {/if}
            {/if}
 
       {/if}

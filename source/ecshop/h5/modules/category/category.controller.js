@@ -38,10 +38,11 @@
 				$state.go('search-result', {
 					sortKey: ENUM.SORT_KEY.DEFAULT,
 					sortValue: ENUM.SORT_VALUE.DEFAULT,
+
 					keyword: null,
 					category: side.id,
+
 					navTitle: side.name,
-					title:    side.name,
 					navStyle: 'default'
 				});
 
@@ -53,7 +54,7 @@
 
 					keyword: null,
 					category: main.id,
-					title:    main.name,
+
 					navTitle: main.name,
 					navStyle: 'default'
 				});

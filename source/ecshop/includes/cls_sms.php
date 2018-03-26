@@ -110,11 +110,6 @@ class sms
     function send($phones,$msg,$send_date = '', $send_num = 1,$sms_type='',$version='1.0')
     {
 
-        if ($sms_type == 'fan-out' && !stripos($msg, '退订回N')) 
-        {
-            $msg .= '退订回N';
-        }
-
         /* 检查发送信息的合法性 */
         $contents=$this->get_contents($phones, $msg);
         if(!$contents)
@@ -156,6 +151,7 @@ class sms
         $openapi_key = array('key'=>OPENAPI_KEY,'secret'=>OPENAPI_SECRET,'site'=>OPENAPI_SITE,'oauth'=>OPENAPI_OAUTH);
         $oauth = new oauth2($openapi_key);
         $api_url = OAUTH_API_PATH."/smsv2/send";
+
         $t_contents=array();
         if(count($contents)>1)
         {
@@ -166,19 +162,11 @@ class sms
                 $send_str['contents']= $this->json->encode($t_contents);
                 $send_str['shopexid'] = get_certificate_info('passport_uid');
                 $send_str['token'] = get_certificate_info('yunqi_code');
-                $send_str['sendType'] = ($sms_type == 'fan-out') ? 'fan-out' : 'notice';
+                $send_str['sendType'] = 'fan-out';
                 $send_str['source'] = SOURCE_ID;
                 $send_str['certi_app'] = 'sms.newsend';
-                if ( @constant('DEBUG_API') ) {
-                    error_log(date("c")."\t".stripslashes(var_export($send_str,1))."\t\n",3,ROOT_PATH."data/logs/sms_".date("Y-m-d").".log");
-                }
-                $r = $oauth->request()->get('api/platform/timestamp');
-                $time = $r->parsed();
-                $rall = $oauth->request($_SESSION['TOKEN'])->post($api_url,$send_str,$time);
+                $rall = $oauth->request($_SESSION['TOKEN'])->post($api_url,$send_str);
                 $result = $rall->parsed();
-                if ( @constant('DEBUG_API') ) {
-                    error_log(date("c")."\t".var_export($result,1)."\t\n",3,ROOT_PATH."data/logs/sms_".date("Y-m-d").".log");
-                }
 
                 if ($result['res'] == 'fail' && $result['msg'] == 10017 )
                 {
@@ -205,23 +193,21 @@ class sms
         }
         else
         {
-            $send_str['sendType'] = ($sms_type == 'fan-out') ? 'fan-out' : 'notice';
+            if(strlen($contents['0']['phones'])>20)
+            {
+                $send_str['sendType'] = 'fan-out';
+            }
+            else
+            {
+                 $send_str['sendType'] = 'notice';
+            }
             $send_str['contents']= $this->json->encode($contents);
             $send_str['shopexid'] = get_certificate_info('passport_uid');
             $send_str['token'] = get_certificate_info('yunqi_code');
             $send_str['source']=SOURCE_ID;
             $send_str['certi_app'] = 'sms.newsend';
-            // 可在config.php中加上define('DEBUG_API','true');
-            if ( @constant('DEBUG_API') ) {
-                error_log(date("c")."\t".stripslashes(var_export($send_str,1))."\t\n",3,ROOT_PATH."data/logs/sms_".date("Y-m-d").".log");
-            }
-            $r = $oauth->request()->get('api/platform/timestamp');
-            $time = $r->parsed();
-            $rall = $oauth->request($_SESSION['TOKEN'])->post($api_url,$send_str,$time);
+            $rall = $oauth->request($_SESSION['TOKEN'])->post($api_url,$send_str);
             $result = $rall->parsed();
-            if ( @constant('DEBUG_API') ) {
-                error_log(date("c")."\t".var_export($result,1)."\t\n",3,ROOT_PATH."data/logs/sms_".date("Y-m-d").".log");
-            }
             // $send_str['certi_app']='sms.send';
             // $send_str['entId']=$GLOBALS['_CFG']['ent_id'];
             // $send_str['entPwd']=$GLOBALS['_CFG']['ent_ac'];
@@ -367,7 +353,6 @@ class sms
         $phones=explode(',',$phones);
         foreach($phones as $key => $value)
         {
-            // 打平台单次请求每次不超过200个手机号
              if($i<200)
              {
                 $i++;
@@ -448,7 +433,7 @@ class sms
      */
     function is_moblie($moblie)
     {
-       return  preg_match("/^1[34578]\d{9}$/", $moblie);
+       return  preg_match("/^0?1((3|8)[0-9]|5[0-35-9]|4[57])\d{8}$/", $moblie);
     }
    
     //加密算法

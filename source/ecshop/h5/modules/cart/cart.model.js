@@ -33,7 +33,7 @@
 				for (var i = 0; i < groups.length; ++i) {
 					var group = groups[i];
 					for (var j = 0; j < group.goods.length; ++j) {
-						count += Number(group.goods[j].amount);
+						count += group.goods[j].amount;
 					}
 				}
 			}

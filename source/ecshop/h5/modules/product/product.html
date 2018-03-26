@@ -29,8 +29,8 @@
         <div class="product-info" ng-if="isLoaded && product">
             <div class="info-name">{{product.name}}</div>
             <div class="info-price">
-                <span class="price-shop" ng-class="{danger: currentStock}">{{currentSelectedPrice| currency:"￥"}}</span>
-                <span class="price-market">{{product.price| currency:"￥"}}</span>
+                <span class="price-shop" ng-class="{danger: currentStock}">￥{{currentStock ? currentStock.goods_attr_price : product.current_price| number:2}}</span>
+                <span class="price-market">￥{{product.price| number:2}}</span>
             </div>
             <div class="info-favorite" ng-click="touchLike()">
                 <img src="image/favorite-off.png" ng-if="!product.is_liked"/>
@@ -46,7 +46,7 @@
                     <div class="group-item" ng-class="{active: isAttrSelected(value)}" ng-repeat="value in property.attrs track by $index" ng-click="touchAttr(property,value)">
                         {{value.attr_name}}
                         <span ng-if="value.attr_price > 0">
-                            (加{{value.attr_price| currency:"￥"}})
+                            (加￥{{value.attr_price| number:2}})
                         </span>
                     </div>
                 </div>

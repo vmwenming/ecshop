@@ -332,11 +332,8 @@ function get_comment_list()
     {
         $filter['keywords'] = json_str_iconv($filter['keywords']);
     }
-
-    $sort = array('comment_id','user_name','comment_type','id_value','ip_address','add_time');
-    $filter['sort_by'] = in_array($_REQUEST['sort_by'], $sort) ? mysql_real_escape_string(trim($_REQUEST['sort_by'])) : 'add_time';
-    $filter['sort_order']   = empty($_REQUEST['sort_order']) ? 'DESC' : mysql_real_escape_string(trim($_REQUEST['sort_order']));
-
+    $filter['sort_by']      = empty($_REQUEST['sort_by']) ? 'add_time' : trim($_REQUEST['sort_by']);
+    $filter['sort_order']   = empty($_REQUEST['sort_order']) ? 'DESC' : trim($_REQUEST['sort_order']);
 
     $where = (!empty($filter['keywords'])) ? " AND content LIKE '%" . mysql_like_quote($filter['keywords']) . "%' " : '';
 
@@ -349,8 +346,8 @@ function get_comment_list()
     /* 获取评论数据 */
     $arr = array();
     $sql  = "SELECT * FROM " .$GLOBALS['ecs']->table('comment'). " WHERE parent_id = 0 $where " .
-            " ORDER BY ".$filter['sort_by']." ".$filter['sort_order'] .
-            " LIMIT ". $filter['start'] ."," .$filter['page_size'];
+            " ORDER BY $filter[sort_by] $filter[sort_order] ".
+            " LIMIT ". $filter['start'] .", $filter[page_size]";
     $res  = $GLOBALS['db']->query($sql);
 
     while ($row = $GLOBALS['db']->fetchRow($res))

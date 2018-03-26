@@ -705,9 +705,9 @@ function set_filter($filter, $sql, $param_str = '')
     {
         $filterfile .= $param_str;
     }
-    setcookie('ECSCP[lastfilterfile]', sprintf('%X', crc32($filterfile)), time() + 600, NULL, NULL, NULL, TRUE);
-    setcookie('ECSCP[lastfilter]',     urlencode(serialize($filter)), time() + 600, NULL, NULL, NULL, TRUE);
-    setcookie('ECSCP[lastfiltersql]',  base64_encode($sql), time() + 600, NULL, NULL, NULL, TRUE);
+    setcookie('ECSCP[lastfilterfile]', sprintf('%X', crc32($filterfile)), time() + 600);
+    setcookie('ECSCP[lastfilter]',     urlencode(serialize($filter)), time() + 600);
+    setcookie('ECSCP[lastfiltersql]',  base64_encode($sql), time() + 600);
 }
 
 /**

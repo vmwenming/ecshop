@@ -27,14 +27,25 @@ class OrderGoods extends BaseModel {
     */
     public static function getSalesCountById($goods_id)
     {
-        // return self::where(['goods_id' => $goods_id])->sum('goods_number');
+        // return self::where(['goods_id' => $goods_id])->with(['orderinfo' => function($query)
+        // {
+        //     $query->where('order_status', 1)->whereIn('shipping_status', [1,2])->whereIn('pay_status', [1,2]);
+
+        // }])->sum('goods_number');
+
+        return self::where(['goods_id' => $goods_id])->sum('goods_number');
 
         // 查询该商品销量
-
-        return self::leftJoin('order_info', 'order_info.order_id', '=', 'order_goods.order_id')
-            ->where('goods_id', $goods_id)
-            ->where('order_status', 5)
-	    ->sum('goods_number');
+        // $sql = 'SELECT IFNULL(SUM(g.goods_number), 0) ' .
+        // 'FROM ' . $GLOBALS['ecs']->table('order_info') . 'AS o, ' .
+        // $GLOBALS['ecs']->table('order_goods') . 'AS g ' .
+        // "WHERE o.order_id = g.order_id " .
+        // "AND o.order_status = '" . OS_CONFIRMED . "'" .
+        // "AND o.shipping_status " . db_create_in(array(SS_SHIPPED, SS_RECEIVED)) .
+        // " AND o.pay_status " . db_create_in(array(PS_PAYED, PS_PAYING)) .
+        // " AND g.goods_id = '$goods_id'";
+        // $sales_count = $GLOBALS['db']->getOne($sql);
+        // return $sales_count;
     }
 
     /**
@@ -44,7 +55,7 @@ class OrderGoods extends BaseModel {
      */
     public static function integralToGive($order_id)
     {
-        $model = self::select('goods.give_integral', 'order_goods.goods_price', 'order_goods.goods_number', 'goods.goods_id', 'order_goods.goods_id', 'goods.goods_name', 'order_goods.goods_attr')->join('goods', 'goods.goods_id', '=', 'order_goods.goods_id')
+        $model = self::join('goods', 'goods.goods_id', '=', 'order_goods.goods_id')
                 ->where('order_goods.order_id', $order_id)
                 ->where('order_goods.goods_id', '>', 0)
                 ->where('order_goods.parent_id', 0)

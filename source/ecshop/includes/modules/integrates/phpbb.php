@@ -113,8 +113,8 @@ class phpbb extends integrate
         if (empty($username))
         {
             $time = time() - 3600;
-            setcookie($this->cookie_prefix.'_data', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix.'_sid', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($this->cookie_prefix.'_data', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix.'_sid', '', $time, $this->cookie_path, $this->cookie_domain);
         }
         else
         {
@@ -141,8 +141,8 @@ class phpbb extends integrate
 
             $sessiondata = array('autologinid'=>$auto_login_key, 'userid'=>$row['user_id']);
 
-            setcookie($this->cookie_prefix . '_data', serialize($sessiondata), time() + 31536000, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . '_sid', $auto_login_key, time() + 31536000, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($this->cookie_prefix . '_data', serialize($sessiondata), time() + 31536000, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . '_sid', $auto_login_key, time() + 31536000, $this->cookie_path, $this->cookie_domain);
         }
     }
 

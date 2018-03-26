@@ -54,7 +54,7 @@
                                 {{goods.property}}
                             </div>
                             <div class="info-price">
-                                {{goods.product_price| currency:"￥"}}
+                                ¥{{goods.product_price}}
                             </div>
                             <div class="info-amount">
                                 x{{goods.total_amount}}
@@ -65,10 +65,10 @@
                 <div class="item-footer">
                     <div class="footer-sum">
                         <span class="sum">
-                            合计：{{order.total  | currency:"￥"}}
+                            合计：￥{{order.total}}
                         </span>
                         <span class="sum" ng-if="order.shipping && order.shipping.price">
-                            （运费：{{order.shipping.price  | currency:"￥"}}）
+                            （运费：￥{{order.shipping.price}}）
                         </span>
                     </div>
                     <div class="footer-button dark" ng-if="order.status == ENUM.ORDER_STATUS.CREATED" ng-click="touchPay(order)">

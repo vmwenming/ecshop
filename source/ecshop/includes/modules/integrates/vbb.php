@@ -114,8 +114,8 @@ class vbb extends integrate
         if (empty($username))
         {
             $time = time() - 3600;
-            setcookie('bbuserid', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie('bbpassword', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie('bbuserid', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie('bbpassword', '', $time, $this->cookie_path, $this->cookie_domain);
         }
         else
         {
@@ -128,8 +128,8 @@ class vbb extends integrate
 
             $row = $this->db->getRow($sql);
 
-            setcookie('bbuserid', $row['user_id'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie('bbpassword', md5($row['password'] . $this->cookie_salt), time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie('bbuserid', $row['user_id'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
+            setcookie('bbpassword', md5($row['password'] . $this->cookie_salt), time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
         }
     }
 

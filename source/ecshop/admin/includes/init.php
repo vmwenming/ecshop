@@ -33,7 +33,7 @@ if (__FILE__ == '')
 @ini_set('session.use_trans_sid', 0);
 @ini_set('session.use_cookies',   1);
 @ini_set('session.auto_start',    0);
-@ini_set('display_errors',        0);
+@ini_set('display_errors',        1);
 
 if (DIRECTORY_SEPARATOR == '\\')
 {
@@ -254,7 +254,7 @@ if ((!isset($_SESSION['admin_id']) || intval($_SESSION['admin_id']) <= 0) &&
     if (!empty($_COOKIE['ECSCP']['admin_id']) && !empty($_COOKIE['ECSCP']['admin_pass']))
     {
         // 找到了cookie, 验证cookie信息
-        $sql = 'SELECT user_id, user_name, password, add_time, action_list, last_login ' .
+        $sql = 'SELECT user_id, user_name, password, action_list, last_login ' .
                 ' FROM ' .$ecs->table('admin_user') .
                 " WHERE user_id = '" . intval($_COOKIE['ECSCP']['admin_id']) . "'";
         $row = $db->GetRow($sql);
@@ -262,8 +262,8 @@ if ((!isset($_SESSION['admin_id']) || intval($_SESSION['admin_id']) <= 0) &&
         if (!$row)
         {
             // 没有找到这个记录
-            setcookie($_COOKIE['ECSCP']['admin_id'],   '', 1, NULL, NULL, NULL, TRUE);
-            setcookie($_COOKIE['ECSCP']['admin_pass'], '', 1, NULL, NULL, NULL, TRUE);
+            setcookie($_COOKIE['ECSCP']['admin_id'],   '', 1);
+            setcookie($_COOKIE['ECSCP']['admin_pass'], '', 1);
 
             if (!empty($_REQUEST['is_ajax']))
             {
@@ -279,7 +279,7 @@ if ((!isset($_SESSION['admin_id']) || intval($_SESSION['admin_id']) <= 0) &&
         else
         {
             // 检查密码是否正确
-            if (md5($row['password'] . $_CFG['hash_code'] . $row['add_time']) == $_COOKIE['ECSCP']['admin_pass'])
+            if (md5($row['password'] . $_CFG['hash_code']) == $_COOKIE['ECSCP']['admin_pass'])
             {
                 !isset($row['last_time']) && $row['last_time'] = '';
                 set_admin_session($row['user_id'], $row['user_name'], $row['action_list'], $row['last_time']);
@@ -291,8 +291,8 @@ if ((!isset($_SESSION['admin_id']) || intval($_SESSION['admin_id']) <= 0) &&
             }
             else
             {
-                setcookie($_COOKIE['ECSCP']['admin_id'],   '', 1, NULL, NULL, NULL, TRUE);
-                setcookie($_COOKIE['ECSCP']['admin_pass'], '', 1, NULL, NULL, NULL, TRUE);
+                setcookie($_COOKIE['ECSCP']['admin_id'],   '', 1);
+                setcookie($_COOKIE['ECSCP']['admin_pass'], '', 1);
 
                 if (!empty($_REQUEST['is_ajax']))
                 {

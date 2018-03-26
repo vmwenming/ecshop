@@ -158,6 +158,5 @@ $modules['18_lead_manage']['lead']        = 'lead.php?act=list';//H5店铺二维
 $modules['18_lead_manage']['leancloud']        = 'leancloud.php?act=list';//云推送管理
 $modules['18_lead_manage']['mobile_setting']        = 'ecmobile_setting.php?act=list';//移动版应用配置
 $modules['18_lead_manage']['h5_setting']        = 'h5_setting.php?act=list';//移动版应用配置
-$modules['18_lead_manage']['wxa_setting']        = 'wxa_setting.php?act=list';//小程序应用配置
 
 ?>

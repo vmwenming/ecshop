@@ -113,7 +113,7 @@ class cls_session
         {
             $this->gen_session_id();
 
-            setcookie($this->session_name, $this->session_id . $this->gen_session_key($this->session_id), 0, $this->session_cookie_path, $this->session_cookie_domain, $this->session_cookie_secure, TRUE);
+            setcookie($this->session_name, $this->session_id . $this->gen_session_key($this->session_id), 0, $this->session_cookie_path, $this->session_cookie_domain, $this->session_cookie_secure);
         }
 
         register_shutdown_function(array(&$this, 'close_session'));
@@ -262,7 +262,7 @@ class cls_session
     {
         $GLOBALS['_SESSION'] = array();
 
-        setcookie($this->session_name, $this->session_id, 1, $this->session_cookie_path, $this->session_cookie_domain, $this->session_cookie_secure, TRUE);
+        setcookie($this->session_name, $this->session_id, 1, $this->session_cookie_path, $this->session_cookie_domain, $this->session_cookie_secure);
 
         /* ECSHOP 自定义执行部分 */
         if (!empty($GLOBALS['ecs']))

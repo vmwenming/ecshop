@@ -127,6 +127,5 @@ $_LANG['clear_demo_data'] = 'Clear experience data';
 $_LANG['manage_required'] = 'Please enter a super administrator account and password';
 $_LANG['login_failure'] = 'ERROR Incorrect username or password';
 $_LANG['clear_success'] = 'Clear success';
-$_LANG['confirm_clear_demo'] = 'Are you sure clear experience data？';
 
 ?>

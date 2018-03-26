@@ -3,7 +3,6 @@
 namespace App\Models\v2;
 use App\Models\BaseModel;
 use App\Helper\Token;
-use Log;
 
 
 class Attribute extends BaseModel {
@@ -136,8 +135,6 @@ class Attribute extends BaseModel {
                 $return_arr['row'][$value['goods_attr_id']]    = $value;
             }
         }
-
-        Log::debug('sort_goods_attr_id_array', ['token' => $return_arr]);
         return $return_arr;
     }
 

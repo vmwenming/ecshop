@@ -435,7 +435,7 @@ function convert_table($table) {
             write_tables($convert_tables, $convert_tables_file, 'convert_tables');
             if (count($convert_tables) < 1) {
                 @unlink(ROOT_PATH.$convert_tables_file);
-                @setcookie('ECCC', $ecshop_charset, 0, NULL, NULL, NULL, TRUE);
+                @setcookie('ECCC', $ecshop_charset, 0);
                 showmessage('<br /><span style="font-size:14px;font-size:weight">杞?崲缁撴潫锛?/span><br /><a href="index.php"><font size="2"><b>&gt;&gt;&nbsp;濡傛灉鎮ㄩ渶瑕佹墽琛屽崌绾х▼搴忥紝璇风偣杩欓噷杩涜?鍗囩骇</b></font></a>');
             } else {
                 array_shift($tables_keys);

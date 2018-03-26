@@ -1,6 +1,4 @@
 <?php
-//
-
 
 /* *
  * 类名：AlipayNotify

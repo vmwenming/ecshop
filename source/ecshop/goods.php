@@ -266,11 +266,11 @@ if (!empty($_COOKIE['ECS']['history']))
         array_pop($history);
     }
 
-    setcookie('ECS[history]', implode(',', $history), gmtime() + 3600 * 24 * 30, NULL, NULL, NULL, TRUE);
+    setcookie('ECS[history]', implode(',', $history), gmtime() + 3600 * 24 * 30);
 }
 else
 {
-    setcookie('ECS[history]', $goods_id, gmtime() + 3600 * 24 * 30, NULL, NULL, NULL, TRUE);
+    setcookie('ECS[history]', $goods_id, gmtime() + 3600 * 24 * 30);
 }
 
 

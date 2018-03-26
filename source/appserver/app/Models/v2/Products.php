@@ -2,6 +2,7 @@
 
 namespace App\Models\v2;
 use App\Models\BaseModel;
+
 use App\Helper\Token;
 
 
@@ -67,6 +68,7 @@ class Products extends BaseModel {
      */
     public static function  get_products_info($goods_id, $spec_goods_attr_id)
     {
+
         $return_array = array();
 
         if (empty($spec_goods_attr_id) || !is_array($spec_goods_attr_id) || empty($goods_id))

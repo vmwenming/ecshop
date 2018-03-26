@@ -57,7 +57,7 @@
                 全选
             </div>
             <div class="submit-total" ng-class="{active: selectedGoods && selectedGoods.length}">
-                <span class="total-price">{{selectedPrice | currency:"￥"}}</span>
+                ￥<span class="total-price">{{selectedPrice}}</span>
             </div>
             <div class="submit-button dark" ng-class="{active: selectedGoods && selectedGoods.length}" ng-click="touchSubmit()">
                 结算（{{selectedAmount}}）

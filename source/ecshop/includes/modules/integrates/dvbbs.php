@@ -199,11 +199,11 @@ class dvbbs extends integrate
         if (empty($username))
         {
             $time = time() - 3600;
-            setcookie($this->cookie_prefix . 'userid', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'username', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'password', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'userhidden', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'onlinecachetime', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($this->cookie_prefix . 'userid', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'username', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'password', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'userhidden', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'onlinecachetime', '', $time, $this->cookie_path, $this->cookie_domain);
         }
         else
         {
@@ -216,10 +216,10 @@ class dvbbs extends integrate
 
             $row = $this->db->getRow($sql);
 
-            setcookie($this->cookie_prefix . 'userid', $row['user_id'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'username', $username, time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'password', $row['truepassword'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix . 'userhidden', $row['userhidden'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($this->cookie_prefix . 'userid', $row['user_id'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'username', $username, time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'password', $row['truepassword'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix . 'userhidden', $row['userhidden'], time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
         }
     }
 

@@ -6,15 +6,15 @@
 		.module('app')
 		.controller('ProfileController', ProfileController);
 
-	ProfileController.$inject = ['$scope', '$http', '$rootScope', '$location', '$state', 'API', 'AppAuthenticationService', 'CartModel', 'ConfigModel'];
+	ProfileController.$inject = ['$scope', '$http', '$rootScope', '$location', '$state', 'API', 'AppAuthenticationService', 'CartModel'];
 
-	function ProfileController($scope, $http, $rootScope, $location, $state, API, AppAuthenticationService, CartModel, ConfigModel) {
+	function ProfileController($scope, $http, $rootScope, $location, $state, API, AppAuthenticationService, CartModel) {
 
-		$scope.touchAllOrders 		= _touchAllOrders;
-		$scope.touchOrderCreated 	= _touchOrderCreated;
-		$scope.touchOrderPayed 		= _touchOrderPayed;
+		$scope.touchAllOrders = _touchAllOrders;
+		$scope.touchOrderCreated = _touchOrderCreated;
+		$scope.touchOrderPayed = _touchOrderPayed;
 		$scope.touchOrderDelivering = _touchOrderDelivering;
-		$scope.touchOrderDelivered 	= _touchOrderDelivered;
+		$scope.touchOrderDelivered = _touchOrderDelivered;
 
 		$scope.touchFav 		= _touchFav;
 		$scope.touchAddress 	= _touchAddress;
@@ -28,17 +28,11 @@
 		$scope.touchBalance 	= _touchBalance;
 		$scope.isSignIn 		= _isSignIn;
 
-		$scope.isWeixin  = _isWeixin;
+		$scope.isWeixin = _isWeixin;
 
 		$scope.cartModel = CartModel;
 
 		$scope.user = AppAuthenticationService.getUser();
-		$scope.userName = "";
-
-		ConfigModel.fetch();
-
-		var config = ConfigModel.getConfig();
-		$scope.authorize = config.authorize;
 
 		function _touchAllOrders() {
 			$state.go('my-order', {
@@ -122,11 +116,6 @@
 				API.user.profileGet().then(function (user) {
 					AppAuthenticationService.setUser(user);
 					$scope.user = user;
-					if(user.nickname){
-						$scope.userName = user.nickname;
-					} else {
-                        $scope.userName = user.username;
-					}
 				})
 			};
 		}

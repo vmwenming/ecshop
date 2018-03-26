@@ -87,7 +87,7 @@ class Region extends BaseModel {
 
         if (!$model = Cache::get($key)) {
             $model = Region::with('regions')->where('parent_id', 0)->get()->toArray();
-            Cache::put($key, $model, 10);
+            Cache::put($key, $model, 0);
         }
 
         return self::formatBody(['regions' => $model]);

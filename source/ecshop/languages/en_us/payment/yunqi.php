@@ -18,8 +18,5 @@ global $_LANG;
 $_LANG['yunqi'] = 'Yunqi cashier';
 $_LANG['yunqi_desc'] = 'The cashier is from the domestic advanced online payment platform。';
 $_LANG['pay_button'] = 'Immediate payment of the use of Yunqi cashier';
-$_LANG['appkey'] = 'Safety check code（Client_id）';
-$_LANG['appsecret'] = 'Security keys（Client_secret）';
-$_LANG['appkey_desc'] = '<a href="'.TEEGON_PASSPORT_URL.'" target="_blank">Enter teegon website “development configuration” check the key</a>';
 
 

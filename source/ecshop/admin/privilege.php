@@ -34,8 +34,8 @@ if ($_REQUEST['act'] == 'logout')
 {
     if($_SESSION['yunqi_login']==true) yunqi_logout();
     /* 清除cookie */
-    setcookie('ECSCP[admin_id]',   '', 1, NULL, NULL, NULL, TRUE);
-    setcookie('ECSCP[admin_pass]', '', 1, NULL, NULL, NULL, TRUE);
+    setcookie('ECSCP[admin_id]',   '', 1);
+    setcookie('ECSCP[admin_pass]', '', 1);
 
     $sess->destroy_session();
     $url = $GLOBALS['ecs']->url()."admin/privilege.php?act=login";
@@ -124,11 +124,11 @@ if ($_REQUEST['act'] == 'login')
 
                         //3.6key获取授权失败，改用3.0key获取
                         if($info['status'] == 'success' && !isset($info['data']['service']['authorize_code']) && !isset($_COOKIE['use_oldkey'])){
-                            setcookie('use_oldkey','true',time()+7200, NULL, NULL, NULL, TRUE);
+                            setcookie('use_oldkey','true',time()+7200);
                             $url = $GLOBALS['ecs']->url()."admin/privilege.php?act=login_extend";
                             echo "<script>window.top.location.replace('".$url."');</script>";exit;
                         }
-                        setcookie('use_oldkey','true',time()-1, NULL, NULL, NULL, TRUE);
+                        setcookie('use_oldkey','true',time()-1);
 
                         if($info['status']=='success' && ($info['data']['service']['authorize_code'] == 'NCH' || $info['data']['service']['authorize_code'] == 'NDE')){
                             $_SESSION['authorization'] = true;
@@ -183,7 +183,11 @@ if ($_REQUEST['act'] == 'login')
         $yunqi_bg = getYunqiAd('ecshop_login_bg'); //ekaidian_login_bg
         if( isset($yunqi_bg[0]['picpath']) && !empty($yunqi_bg[0]['picpath']) ){
             $smarty->assign('yunqi_bg',$yunqi_bg[0]['picpath']);
-            $smarty->assign('yunqi_ad_link',$yunqi_bg[0]['link']);
+        }
+        $yunqi_ad = getYunqiAd('ecshop_login_link'); //ekaidian_login_link
+        if( $yunqi_ad[0]['picpath'] && $yunqi_ad[0]['link'] ){
+            $smarty->assign('yunqi_ad_link',$yunqi_ad[0]['link']);
+            $smarty->assign('yunqi_ad_url',$yunqi_ad[0]['picpath']);
         }
 
         $smarty->display('login.htm');
@@ -215,14 +219,14 @@ elseif ($_REQUEST['act'] == 'signin')
     if(!empty($ec_salt))
     {
          /* 检查密码是否正确 */
-         $sql = "SELECT user_id, user_name, password, add_time, action_list, last_login,suppliers_id,ec_salt,passport_uid".
+         $sql = "SELECT user_id, user_name, password, last_login, action_list, last_login,suppliers_id,ec_salt,passport_uid".
             " FROM " . $ecs->table('admin_user') .
             " WHERE user_name = '" . $_POST['username']. "' AND password = '" . md5(md5($_POST['password']).$ec_salt) . "'";
     }
     else
     {
          /* 检查密码是否正确 */
-         $sql = "SELECT user_id, user_name, password, add_time, action_list, last_login,suppliers_id,ec_salt,passport_uid".
+         $sql = "SELECT user_id, user_name, password, last_login, action_list, last_login,suppliers_id,ec_salt,passport_uid".
             " FROM " . $ecs->table('admin_user') .
             " WHERE user_name = '" . $_POST['username']. "' AND password = '" . md5($_POST['password']) . "'";
     }
@@ -248,14 +252,14 @@ elseif ($_REQUEST['act'] == 'signin')
         // 登录成功
         set_admin_session($row['user_id'], $row['user_name'], $row['action_list'], $row['last_login']);
         $_SESSION['suppliers_id'] = $row['suppliers_id'];
-        if(empty($row['ec_salt']))
-        {
-            $ec_salt=rand(1,9999);
-            $new_possword=md5(md5($_POST['password']).$ec_salt);
+		if(empty($row['ec_salt']))
+	    {
+			$ec_salt=rand(1,9999);
+			$new_possword=md5(md5($_POST['password']).$ec_salt);
              $db->query("UPDATE " .$ecs->table('admin_user').
                  " SET ec_salt='" . $ec_salt . "', password='" .$new_possword . "'".
                  " WHERE user_id='$_SESSION[admin_id]'");
-        }
+		}
 
         if($row['action_list'] == 'all' && empty($row['last_login']))
         {
@@ -270,8 +274,8 @@ elseif ($_REQUEST['act'] == 'signin')
         if (isset($_POST['remember']))
         {
             $time = gmtime() + 3600 * 24 * 365;
-            setcookie('ECSCP[admin_id]',   $row['user_id'],                            $time, NULL, NULL, NULL, TRUE);
-            setcookie('ECSCP[admin_pass]', md5($row['password'] . $_CFG['hash_code'] . $row['add_time']), $time, NULL, NULL, NULL, TRUE);
+            setcookie('ECSCP[admin_id]',   $row['user_id'],                            $time);
+            setcookie('ECSCP[admin_pass]', md5($row['password'] . $_CFG['hash_code']), $time);
         }
 
         // 清除购物车中过期的数据
@@ -517,16 +521,16 @@ elseif ($_REQUEST['act'] == 'update' || $_REQUEST['act'] == 'update_self')
         /* 查询旧密码并与输入的旧密码比较是否相同 */
         $sql = "SELECT password FROM ".$ecs->table('admin_user')." WHERE user_id = '$admin_id'";
         $old_password = $db->getOne($sql);
-        $sql ="SELECT ec_salt FROM ".$ecs->table('admin_user')." WHERE user_id = '$admin_id'";
+		$sql ="SELECT ec_salt FROM ".$ecs->table('admin_user')." WHERE user_id = '$admin_id'";
         $old_ec_salt= $db->getOne($sql);
-        if(empty($old_ec_salt))
-        {
-            $old_ec_password=md5($_POST['old_password']);
-        }
-        else
-        {
-            $old_ec_password=md5(md5($_POST['old_password']).$old_ec_salt);
-        }
+		if(empty($old_ec_salt))
+	    {
+			$old_ec_password=md5($_POST['old_password']);
+		}
+		else
+	    {
+			$old_ec_password=md5(md5($_POST['old_password']).$old_ec_salt);
+		}
         if ($old_password <> $old_ec_password)
         {
            $link[] = array('text' => $_LANG['go_back'], 'href'=>'javascript:history.back(-1)');

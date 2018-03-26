@@ -53,9 +53,6 @@ switch ($action)
             }
             assign_query_info();
             $smarty->assign('send_rank',   $send_rank);
-            $sql="SELECT * FROM ". $ecs->table('shop_config') . "WHERE  code='default_sms_sign'";
-            $row=$db->getRow($sql);
-            $smarty->assign('default_sms_sign', $row['value']);
             $smarty->display('sms_send_ui.htm');
         }
         else
@@ -339,8 +336,6 @@ switch ($action)
     /* 发送短信 */
     case 'send_sms' :
         $send_num = isset($_POST['send_num'])   ? $_POST['send_num']    : '';
-        // 除了后台手动发的为营销短信  其它暂时默认都为通知短信
-        $sms_type = isset($_POST['sms_type']) ? $_POST['sms_type'] : '';
 
         if(isset($send_num))
         {
@@ -395,7 +390,7 @@ switch ($action)
 
         $send_date = isset($_POST['send_date']) ? $_POST['send_date']   : '';   
                
-        $result = $sms->send($phone, $msg, $send_date, $send_num = 13, $sms_type);
+        $result = $sms->send($phone, $msg, $send_date, $send_num = 13);
 
         $link[] = array('text'  =>  $_LANG['back'] . $_LANG['03_sms_send'],
                         'href'  =>  'sms.php?act=display_send_ui');

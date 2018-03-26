@@ -46,7 +46,7 @@
 	/* @ngInject */
 	function config($stateProvider, $urlRouterProvider) {
 
-		$urlRouterProvider.otherwise('/home');
+		$urlRouterProvider.otherwise('/main');
 
 		$stateProvider
 			.state('404', {

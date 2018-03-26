@@ -270,7 +270,7 @@ class matrix
     }
 
     //创建订单
-    function createOrder($order_sn,$type=''){
+    function createOrder($order_sn,$type){
         include_once(ROOT_PATH.'includes/cls_certificate.php');
         $cert = new certificate();
         //订单总体信息
@@ -324,7 +324,7 @@ class matrix
     }
 
     //创建会员
-    function createMember($ueser_id,$type=''){
+    function createMember($ueser_id,$type){
         include_once(ROOT_PATH.'includes/cls_certificate.php');
         $cert = new certificate();
         if($cert->is_bind_sn('ecos.taocrm','bind_type')){
@@ -368,7 +368,7 @@ class matrix
 
 
     //更新订单
-    function updateOrder($order_sn,$type=''){
+    function updateOrder($order_sn,$type){
         include_once(ROOT_PATH.'includes/cls_certificate.php');
         $cert = new certificate();
 

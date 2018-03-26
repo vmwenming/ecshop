@@ -40,15 +40,10 @@ $_LANG['user_rand'] = '按用戶等級發送短消息';
 $_LANG['phone_notice'] = '多個手機號碼用半角逗號分開';
 $_LANG['msg'] = '消息內容';
 $_LANG['msg_notice'] = '最長70字符';
-$_LANG['msg_forbidden'] = '內容里請不要出現“test”或者“測試”這樣的字眼，否則可能會被運營商攔截';
 $_LANG['send_date'] = '定時發送時間';
 $_LANG['send_date_notice'] = '格式為YYYY-MM-DD HH:II。為空表示立即發送。';
 $_LANG['back_send_history'] = '返回發送歷史列表';
 $_LANG['back_charge_history'] = '返回充值歷史列表';
-$_LANG['sms_preview'] = '短信預覽';
-$_LANG['notice0'] = '已輸入';
-$_LANG['notice1'] = '個字符，約';
-$_LANG['notice2'] = '條短信長度 短信內容的實際長度以最終發出的結果為準';
 
 /* 記錄查詢界面 */
 $_LANG['start_date'] = '開始日期';
@@ -140,7 +135,6 @@ $_LANG['js_languages']['username_format_error'] = '用戶名格式不對。';
 $_LANG['js_languages']['domain_empty_error'] = '域名不能為空。';
 $_LANG['js_languages']['domain_format_error'] = '域名格式不對。';
 $_LANG['js_languages']['send_empty_error'] = '發送手機號與發送等級至少填寫一項！';
-$_LANG['js_languages']['sms_empty_error'] = '短信內容長度不為空';
 
 //--發送
 $_LANG['js_languages']['phone_empty_error'] = '請填寫手機號。';

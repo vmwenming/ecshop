@@ -43,7 +43,7 @@
                     {{goods.property}}
                 </div>
                 <div class="info-price">
-                    {{goods.price| currency:"￥"}}
+                    ¥{{goods.price}}
                 </div>
                 <div class="info-amount">
                     x{{goods.amount}}
@@ -59,7 +59,7 @@
                 配送方式
             </div>
             <div class="item-value">
-                {{express ? express.name + '(' + (express.fee | currency:"￥")+ ')' : '选择配送方式'}}
+                {{express ? express.name + '(￥' + express.fee + ')' : '选择配送方式'}}
             </div>
             <img class="item-arrow" src="image/nav-right.png"/>
         </div>
@@ -105,24 +105,24 @@
     <!-- Total -->
     <div class="confirm-summury" ng-if="goods && goods.length">
         <div class="summury-total">
-            订单总额 <span class="total-price">+ {{priceInfo.total_price | currency:"￥"}}</span>
+            订单总额 <span class="total-price">+ ￥{{priceInfo.total_price || '0.00'}}</span>
         </div>
         <div class="summury-detail">
-            商品总额 <span class="total-price">+ {{priceInfo.product_price | currency:"￥"}}</span>
+            商品总额 <span class="total-price">+ ￥{{priceInfo.product_price || '0.00'}}</span>
         </div>
         <div class="summury-detail">
-            运费金额 <span class="total-price">+ {{(priceInfo.shipping_price | currency:"￥")||( express.fee | currency:"￥")}}</span>
+            运费金额 <span class="total-price">+ ￥{{priceInfo.shipping_price || express.fee || '0.00'}}</span>
         </div>
         <div class="summury-detail" ng-repeat="promo in priceInfo.promos track by $index">
-            {{ formatPromo(promo.promo) }} <span class="total-price">- {{promo.price | currency:"￥"}}</span>
+            {{ formatPromo(promo.promo) }} <span class="total-price">- ￥{{promo.price}}</span>
         </div>
     </div>
 
     <!-- Submit -->
     <div class="confirm-submit" ng-if="goods && goods.length">
         <div class="submit-total">
-            <div class="total-price">{{priceInfo.total_price | currency:"￥"}}</div>
-            <div class="total-discount">已优惠{{all_discount | currency:"￥"}}</div>
+            <div class="total-price">￥{{priceInfo.total_price || '0.00'}}</div>
+            <div class="total-discount">已优惠￥{{all_discount || '0.00'}}</div>
         </div>
         <div class="submit-button dark" ng-class="{active: canPurchase}" ng-click="touchSubmit()">
             提交订单并支付

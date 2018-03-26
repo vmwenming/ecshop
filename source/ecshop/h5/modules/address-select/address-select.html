@@ -21,7 +21,7 @@
           <div class="item-info">
             <div class="info-contact">
               {{consignee.name}} {{consignee.mobile}}
-              <!-- <span class="contact-default" ng-if="consignee.is_default">默认</span> -->
+              <span class="contact-default" ng-if="consignee.is_default">默认</span>
             </div>
             <div class="info-detail">
               <span ng-repeat="value in consignee.regions track by $index">
@@ -29,12 +29,8 @@
               </span>
               {{consignee.address}}
             </div>
-            <div class="submit-select" ng-class="{active: isDefaultAddress(consignee)}" ng-click="touchDefaultAddress(consignee)">
-                <div class="select-checkbox">
-                </div>
-                设置默认
-           </div>
           </div>
+
 
           <div class="item-edit" ng-click="touchModify(consignee)">
             <img src="image/ind-edit.png"/>
@@ -51,3 +47,4 @@
     </div>
 
 </div>
+

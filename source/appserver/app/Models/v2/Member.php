@@ -17,7 +17,6 @@ class Member extends BaseModel {
     const VENDOR_WEIBO  = 2;
     const VENDOR_QQ     = 3;
     const VENDOR_TAOBAO = 4;
-    const VENDOR_WXA    = 5;    //微信小程序
 
     const GENDER_SECRET = 0;
     const GENDER_MALE   = 1;
@@ -54,30 +53,6 @@ class Member extends BaseModel {
         return self::formatError(self::BAD_REQUEST, trans('message.member.failed'));
     }
 
-    public static function logAccountChange($user_id, $user_money = 0, $frozen_money = 0, $rank_points = 0, $pay_points = 0, $change_desc = '', $change_type = self::ACT_OTHER)
-    {
-        /* 插入帐户变动记录 */
-        $account_log = array(
-            'user_id'       => $user_id,
-            'user_money'    => $user_money,
-            'frozen_money'  => $frozen_money,
-            'rank_points'   => $rank_points,
-            'pay_points'    => $pay_points,
-            'change_time'   => time(),
-            'change_desc'   => $change_desc,
-            'change_type'   => $change_type
-        );
-        AccountLog::insert($account_log);
-
-        /* 更新用户信息 */
-        $user = self::find($user_id);
-        $user->user_money   += $user_money;
-        $user->frozen_money += $frozen_money;
-        $user->rank_points  += $rank_points;
-        $user->pay_points   += $pay_points;
-        $user->save();
-    }
-
     public static function createMember(array $attributes)
     {
         extract($attributes);
@@ -98,44 +73,6 @@ class Member extends BaseModel {
 
             if ($model = self::create($data))
             {
-                // 邀请注册
-                if (isset($invite_code)) {
-                    $up_uid = $invite_code;
-
-                    if (AffiliateLog::checkOpen() == 1) {
-
-                        $affiliate = AffiliateLog::getAffiliateConfig();
-                        $affiliate['config']['level_register_all'] = intval($affiliate['config']['level_register_all']);
-                        $affiliate['config']['level_register_up'] = intval($affiliate['config']['level_register_up']);
-                        $_LANG = trans('message.member.account');
-                        if ($up_uid) {
-                            if (!empty($affiliate['config']['level_register_all']))
-                            {
-                                if (!empty($affiliate['config']['level_register_up']))
-                                {
-                                    if ($rank_points = self::find($up_uid)) {
-                                        $rank_points = $rank_points->rank_points;
-                                    
-                                        if ($rank_points + $affiliate['config']['level_register_all'] <= $affiliate['config']['level_register_up'])
-                                        {
-                                            self::logAccountChange($up_uid, 0, 0, $affiliate['config']['level_register_all'], 0, sprintf($_LANG, $model->user_id, $model->user_name));
-                                        }
-                                    }
-                                    
-                                }
-                                else
-                                {
-                                    self::logAccountChange($up_uid, 0, 0, $affiliate['config']['level_register_all'], 0, $_LANG);
-                                }
-                            }
-
-                            //设置推荐人
-                            $model->parent_id = $up_uid;
-                            $model->save();
-                        }
-                    }
-                }
-		
                 if (isset($device_id) && $device_id) {
                     Device::toUpdateOrCreate($model->user_id, $attributes);
                 }
@@ -182,44 +119,6 @@ class Member extends BaseModel {
 
             if ($model = self::create($data))
             {
-                // 邀请注册
-                if (isset($invite_code)) {
-                    $up_uid = $invite_code;
-
-                    if (AffiliateLog::checkOpen() == 1) {
-
-                        $affiliate = AffiliateLog::getAffiliateConfig();
-                        $affiliate['config']['level_register_all'] = intval($affiliate['config']['level_register_all']);
-                        $affiliate['config']['level_register_up'] = intval($affiliate['config']['level_register_up']);
-                        $_LANG = trans('message.member.account');
-                        if ($up_uid) {
-                            if (!empty($affiliate['config']['level_register_all']))
-                            {
-                                if (!empty($affiliate['config']['level_register_up']))
-                                {
-                                    if ($rank_points = self::find($up_uid)) {
-                                        $rank_points = $rank_points->rank_points;
-                                    
-                                        if ($rank_points + $affiliate['config']['level_register_all'] <= $affiliate['config']['level_register_up'])
-                                        {
-                                            self::logAccountChange($up_uid, 0, 0, $affiliate['config']['level_register_all'], 0, sprintf($_LANG, $model->user_id, $model->user_name));
-                                        }
-                                    }
-                                    
-                                }
-                                else
-                                {
-                                    self::logAccountChange($up_uid, 0, 0, $affiliate['config']['level_register_all'], 0, $_LANG);
-                                }
-                            }
-
-                            //设置推荐人
-                            $model->parent_id = $up_uid;
-                            $model->save();
-                        }
-                    }
-                }
-		
                 if (isset($device_id) && $device_id) {
                     Device::toUpdateOrCreate($model->user_id, $attributes);
                 }
@@ -259,7 +158,7 @@ class Member extends BaseModel {
 
         $res = Sms::requestSmsCode($mobile);
 
-        if ($res === true) { // !isset($res['error'])
+        if ($res === true) {
             return self::formatBody();
         }
         
@@ -296,18 +195,6 @@ class Member extends BaseModel {
 
             if (isset($nickname)) {
                 $model->alias = strip_tags($nickname);
-            }
-
-            if(isset($avatar_url)){
-                if($avatar = Avatar::where('user_id', $uid)->first()){
-                    $avatar->avatar = $avatar_url;
-                    $avatar->save();
-                }else{
-                    $avatar = new Avatar;
-                    $avatar->user_id = $uid;
-                    $avatar->avatar = $avatar_url;
-                    $avatar->save();
-                }
             }
 
             if (isset($values)) {
@@ -407,9 +294,13 @@ class Member extends BaseModel {
         extract($attributes);
 
         if ($model = Member::where('email', $email)->first()){
-	
+
+            Log::info('email model : ' . json_encode($model->toArray()));
+
             $hash_code = ShopConfig::findByCode('hash_code');
-	    
+
+            Log::info('hash_code : ' . json_encode($hash_code));
+
             $activation = md5($model->user_id . $hash_code . $model->reg_time);
 
             //Send mail
@@ -434,7 +325,6 @@ class Member extends BaseModel {
     public static function auth(array $attributes)
     {
         extract($attributes);
-        $userinfo = null;
         switch ($vendor) {
             case self::VENDOR_WEIXIN:
                 $userinfo = self::getUserByWeixin($access_token, $open_id);
@@ -451,19 +341,7 @@ class Member extends BaseModel {
             case self::VENDOR_TAOBAO:
                 return false;
                 break;
-            case self::VENDOR_WXA:
-                $wxainfo = self::getUserByWXA($js_code);                
-                if($wxainfo)
-                {
-                    $open_id = $wxainfo['openid'];
-                    $session_key = $wxainfo['session_key'];
-                    $userinfo['prefix'] = 'wxa';
-                    $userinfo['avatar'] = '';
-                    $userinfo['gender'] = 0;
-                    $userinfo['nickname'] = 'wxa_'+$wxainfo['openid'];    
-                }
-                
-                break;
+
             default:
                 return false;
                 break;
@@ -473,7 +351,6 @@ class Member extends BaseModel {
             return self::formatError(self::BAD_REQUEST, trans('message.member.auth.error'));
         }
 
-        $is_new_user = false;
         if (!$user_id = self::checkBind($open_id)) {
             // create user
             $model = self::createAuthUser($vendor, $open_id, $userinfo['nickname'], $userinfo['gender'], $userinfo['prefix'], $userinfo['avatar']);
@@ -483,7 +360,6 @@ class Member extends BaseModel {
             }
 
             $user_id = $model->user_id;
-            $is_new_user = true;
 
         } else {
             UserRegStatus::toUpdate($user_id, 1);
@@ -492,12 +368,10 @@ class Member extends BaseModel {
         if (isset($device_id) && $device_id) {
             Device::toUpdateOrCreate($user_id, $attributes);
         }
-        if(!isset($open_id)){
-            $open_id = '';
-        }
+
         // login
-        return self::formatBody(['token' => Token::encode(['uid' => $user_id]), 'user' => Member::where('user_id', $user_id)->first(),'openid'=>$open_id,'is_new_user' => $is_new_user]
-            );
+        // UserRegStatus::toUpdate($model->user_id, 1); // 完善信息
+        return self::formatBody(['token' => Token::encode(['uid' => $user_id]), 'user' => Member::where('user_id', $user_id)->first()]);
 
     }
 
@@ -525,22 +399,7 @@ class Member extends BaseModel {
                 break;
 
             case self::VENDOR_QQ:
-                
-                $oauth = Configs::where(['type' => 'oauth', 'status' => 1, 'code' => 'qq.wap'])->first();
-                $config = Configs::verifyConfig(['app_id', 'app_secret'], $oauth);
-
-                Log::info('QQ登录：' . json_encode($oauth));
-
-                if (!$oauth || !$config) {
-                    return self::formatError(self::BAD_REQUEST, trans('message.config.oauth.qq'));
-                }
-
-                $qc = new Qc($config['app_id'], $config['app_secret']);
-
-                $res = $qc->login(url('/v2/ecapi.auth.web.callback/'.self::VENDOR_QQ.'/?referer='.$referer), 'get_user_info');               
-
-                return $res;
-                
+                return false;
                 break;
 
             case self::VENDOR_TAOBAO:
@@ -572,10 +431,11 @@ class Member extends BaseModel {
                 $wechat = new Wechat($config['app_id'], $config['app_secret']);
 
                 if (!$access_token = $wechat->getAccessToken('code', isset($_GET['code']) ? $_GET['code'] : '')) {
-                    Log::error('access_token: '.$wechat->error());
                     return self::formatError(self::BAD_REQUEST, trans('message.member.auth.error'));
                 }
                 $open_id = $wechat->getOpenid();
+
+                
                 if($scope == "snsapi_userinfo"){
                     $oauth_id = $wechat->getUnionid() ?: $open_id;
                     $userinfo = self::getUserByWeixin($access_token, $oauth_id);
@@ -617,37 +477,7 @@ class Member extends BaseModel {
                 break;
 
             case self::VENDOR_QQ:
-                $oauth = Configs::where(['type' => 'oauth', 'status' => 1, 'code' => 'qq.wap'])->first();
-
-                $config = Configs::verifyConfig(['app_id', 'app_secret'], $oauth);
-
-                if (!$oauth || !$config) {
-                    return self::formatError(self::BAD_REQUEST, trans('message.config.oauth.qq'));
-                }
-                
-                $qc = new Qc($config['app_id'], $config['app_secret']);
-
-                $access_token = $qc->get_access_token(url('/v2/ecapi.auth.web.callback/'.self::VENDOR_QQ)); // 
-
-                $open_id = $qc->get_openid($access_token); // open_id
-
-                $user_info = $qc->get_user_info($access_token, $open_id, $config['app_id']);
-
-                if (!$user_info) {
-                    return self::formatError(self::BAD_REQUEST, trans('message.member.auth.error'));
-                }
-
-                if (!$user_id = self::checkBind($open_id)) {
-                    // create user
-                    $model = self::createAuthUser($vendor, $open_id, $user_info['nickname'], $user_info['gender']);
-
-                    if (!$model) {
-                        return self::formatError(self::BAD_REQUEST, trans('message.member.auth.error'));
-                    }
-                }
-
-                return ['token' => $access_token, 'openid' => $open_id];
-
+                return false;
                 break;
 
             case self::VENDOR_TAOBAO:
@@ -678,35 +508,6 @@ class Member extends BaseModel {
             'avatar' => $res['headimgurl']
         ];
     }
-
-    private static function getUserByWXA($js_code)
-    {
-        $oauth = Configs::where(['type' => 'oauth', 'status' => 1, 'code' => 'wechat.wxa'])->first();
-        $config = Configs::verifyConfig(['app_id', 'app_secret'], $oauth);
-        Log::error('weixin_config: '.var_export($config,true));
-        if (!$oauth || !$config) {
-            return self::formatError(self::BAD_REQUEST, trans('message.config.oauth.wechat'));
-
-        }
-
-        $app_id = $config['app_id'];
-        $app_secret = $config['app_secret'];
-        $api = "https://api.weixin.qq.com/sns/jscode2session?appid={$app_id}&secret={$app_secret}&js_code={$js_code}&grant_type=authorization_code";
-        Log::error('weixin_oauth_log: '.$api);
-        $res = curl_request($api);
-        if (isset($res['errcode'])) {
-            Log::error('weixin_oauth_log: '.json_encode($res));
-            return false;
-        };
-        Log::error('weixin_oauth_log: '.json_encode($res));
-        return [
-            'openid' => $res['openid'],
-            'prefix' => 'wxa',
-            'session_key' => $res['session_key']            
-        ];
-        
-    }
-    
 
     private static function getUserByWeibo($access_token, $open_id)
     {
@@ -753,11 +554,7 @@ class Member extends BaseModel {
 
     private static function checkBind($open_id)
     {
-        $user = Sns::where('open_id', $open_id)->first();
-        if (empty($user)) {
-            return false;
-        }
-        return $user->user_id;
+        return Sns::where('open_id', $open_id)->pluck('user_id')->first();
     }
 
     private static function createAuthUser($vendor, $open_id, $nickname, $gender, $prefix = 'ec', $avatar = '')
@@ -947,7 +744,6 @@ class Member extends BaseModel {
         AccountLog::insert($account_log);
         // /* 更新用户信息 */
         self::where('user_id',$user_id)
-                ->limit(1)
                 ->increment('user_money',$user_money)
                 ->increment('frozen_money',$frozen_money)
                 ->increment('rank_points',$rank_points)
@@ -956,8 +752,10 @@ class Member extends BaseModel {
 
     private static function verifyCode($mobile, $code)
     {
-    	$res = Sms::verifySmsCode($mobile, $code);
-        if ($res === true) { // !isset($res['error']
+	    $res = Sms::verifySmsCode($mobile, $code);
+
+        // TODO : 同步
+        if ($res === true) {
             return true;
         }
         return false;
@@ -975,7 +773,7 @@ class Member extends BaseModel {
 
     public function getRankAttribute()
     {
-        if ($model = UserRank::findRankByUid($this->user_id)) {
+        if ($model = UserRank::findByPoints($this->attributes['rank_points'])) {
             return $model->toArray();
         }else{
             //如果没有等级　默认返回注册用户

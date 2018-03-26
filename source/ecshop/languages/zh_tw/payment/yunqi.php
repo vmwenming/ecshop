@@ -18,6 +18,4 @@ global $_LANG;
 $_LANG['yunqi'] = '雲起收銀';
 $_LANG['yunqi_desc'] = '雲起收銀 是國內先進的網上支付平臺。';
 $_LANG['pay_button'] = '立即支付';
-$_LANG['appkey'] = '安全校驗碼（Client_id）';
-$_LANG['appsecret'] = '安全密鑰（Client_secret）';
-$_LANG['appkey_desc'] = '<a href="'.TEEGON_PASSPORT_URL.'" target="_blank">進入天工官網“開發配置”核對密鑰</a>';
+

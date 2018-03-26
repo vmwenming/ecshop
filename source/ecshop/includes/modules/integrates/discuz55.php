@@ -221,8 +221,8 @@ class discuz55 extends integrate
         if (empty($username))
         {
             $time = time() - 3600;
-            setcookie($this->cookie_prefix.'sid', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix.'auth', '', $time, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($this->cookie_prefix.'sid', '', $time, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix.'auth', '', $time, $this->cookie_path, $this->cookie_domain);
         }
         else
         {
@@ -235,8 +235,8 @@ class discuz55 extends integrate
 
             $row = $this->db->getRow($sql);
 
-            setcookie($this->cookie_prefix.'sid', $this->random(6), time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
-            setcookie($this->cookie_prefix.'auth', $this->authcode($row['password']."\t".$row['salt']."\t".$row['user_id'], 'ENCODE'), time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain, NULL, TRUE);
+            setcookie($this->cookie_prefix.'sid', $this->random(6), time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
+            setcookie($this->cookie_prefix.'auth', $this->authcode($row['password']."\t".$row['salt']."\t".$row['user_id'], 'ENCODE'), time() + 3600 * 24 * 30, $this->cookie_path, $this->cookie_domain);
         }
     }
 

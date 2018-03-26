@@ -30,10 +30,10 @@ $back_act='';
 
 // 不需要登录的操作或自己验证是否登录（如ajax处理）的act
 $not_login_arr =
-array('sms_get_password','ajax_validate_sms','ajax_validate_vcode','login','act_login','register','act_register','act_edit_password','get_password','send_pwd_email','password', 'signin', 'add_tag', 'collect', 'return_to_cart', 'logout', 'email_list', 'validate_email', 'send_hash_mail', 'order_query', 'is_registered', 'check_email','clear_history','qpassword_name', 'get_passwd_question', 'check_answer');
+array('login','act_login','register','act_register','act_edit_password','get_password','send_pwd_email','password', 'signin', 'add_tag', 'collect', 'return_to_cart', 'logout', 'email_list', 'validate_email', 'send_hash_mail', 'order_query', 'is_registered', 'check_email','clear_history','qpassword_name', 'get_passwd_question', 'check_answer');
 
 /* 显示页面的action列表 */
-$ui_arr = array('sms_get_password','register', 'login', 'profile', 'order_list', 'order_detail', 'address_list', 'collection_list',
+$ui_arr = array('register', 'login', 'profile', 'order_list', 'order_detail', 'address_list', 'collection_list',
 'message_list', 'tag_list', 'get_password', 'reset_password', 'booking_list', 'add_booking', 'account_raply',
 'account_deposit', 'account_log', 'account_detail', 'act_account', 'pay', 'default', 'bonus', 'group_buy', 'group_buy_detail', 'affiliate', 'comment_list','validate_email','track_packages', 'transform_points','qpassword_name', 'get_passwd_question', 'check_answer','delivery_info');
 
@@ -160,7 +160,7 @@ elseif ($action == 'act_register')
         $other['mobile_phone'] = isset($_POST['extend_field5']) ? $_POST['extend_field5'] : '';
         $sel_question = empty($_POST['sel_question']) ? '' : compile_str($_POST['sel_question']);
         $passwd_answer = isset($_POST['passwd_answer']) ? compile_str(trim($_POST['passwd_answer'])) : '';
-        $sms_code = isset($_POST['sms_code'])?trim($_POST['sms_code']):'';
+
 
         $back_act = isset($_POST['back_act']) ? trim($_POST['back_act']) : '';
 
@@ -183,14 +183,21 @@ elseif ($action == 'act_register')
             show_message($_LANG['passwd_balnk']);
         }
 
+        /* 验证码检查 */
+        if ((intval($_CFG['captcha']) & CAPTCHA_REGISTER) && gd_version() > 0)
+        {
+            if (empty($_POST['captcha']))
+            {
+                show_message($_LANG['invalid_captcha'], $_LANG['sign_up'], 'user.php?act=register', 'error');
+            }
 
-        //短信验证码检查
-        if(preg_match("/^1[34578]{1}\d{9}$/",$username)){
-            if($sms_code != '' && $sms_code == $_SESSION['sms_code']){
-                $other['mobile_phone'] = $username;
-                $_SESSION['sms_code'] ='false';
-            }else{
-                show_message('短信验证码错误', $_LANG['sign_up'], 'user.php?act=register', 'error');
+            /* 检查验证码 */
+            include_once('includes/cls_captcha.php');
+
+            $validator = new captcha();
+            if (!$validator->check_word($_POST['captcha']))
+            {
+                show_message($_LANG['invalid_captcha'], $_LANG['sign_up'], 'user.php?act=register', 'error');
             }
         }
 
@@ -242,36 +249,10 @@ elseif ($action == 'act_register')
             $err->show($_LANG['sign_up'], 'user.php?act=register');
         }
     }
-
-    //ajax验证验证码
-}elseif($action == 'ajax_validate_vcode'){
-    /* 验证码检查 */
-
-    if ((intval($_CFG['captcha']) || CAPTCHA_REGISTER) && gd_version() > 0)
-    {
-        require('admin/includes/lib_main.php');
-        $code = str_replace('\\','',$_REQUEST['JSON']);
-        $code = json_decode($code,1);
-        $code = $code['code'];
-        if(!$code){
-            make_json_result('failed');exit;
-        }
-
-        /* 检查验证码 */
-        include_once('includes/cls_captcha.php');
-        $validator = new captcha();
-        if ($validator->check_word($code)){
-            $_SESSION['v_code'] = 'true';
-            make_json_result('succ');exit;
-        }else{
-            make_json_result('failed');exit;
-        }
-    }
-
-
+}
 
 /* 验证用户注册邮件 */
-}elseif ($action == 'validate_email')
+elseif ($action == 'validate_email')
 {
     $hash = empty($_GET['hash']) ? '' : trim($_GET['hash']);
     if ($hash)
@@ -355,12 +336,6 @@ elseif ($action == 'act_login')
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';
     $password = isset($_POST['password']) ? trim($_POST['password']) : '';
     $back_act = isset($_POST['back_act']) ? trim($_POST['back_act']) : '';
-
-    // 登录密码不能为空
-    if (empty($password)) 
-    {
-        show_message($_LANG['passport_js']['password_empty'], $_LANG['relogin_lnk'], 'user.php', 'error');
-    }
 
 
     $captcha = intval($_CFG['captcha']);
@@ -769,6 +744,7 @@ elseif ($action == 'reset_password')
 elseif ($action == 'act_edit_password')
 {
     include_once(ROOT_PATH . 'includes/lib_passport.php');
+
     $old_password = isset($_POST['old_password']) ? trim($_POST['old_password']) : null;
     $new_password = isset($_POST['new_password']) ? trim($_POST['new_password']) : '';
     $user_id      = isset($_POST['uid'])  ? intval($_POST['uid']) : $user_id;
@@ -778,21 +754,22 @@ elseif ($action == 'act_edit_password')
     {
         show_message($_LANG['passport_js']['password_shorter']);
     }
+
     $user_info = $user->get_profile_by_id($user_id); //论坛记录
 
     if (($user_info && (!empty($code) && md5($user_info['user_id'] . $_CFG['hash_code'] . $user_info['reg_time']) == $code)) || ($_SESSION['user_id']>0 && $_SESSION['user_id'] == $user_id && $user->check_user($_SESSION['user_name'], $old_password)))
     {
-        
+		
         if ($user->edit_user(array('username'=> (empty($code) ? $_SESSION['user_name'] : $user_info['user_name']), 'old_password'=>$old_password, 'password'=>$new_password), empty($code) ? 0 : 1))
         {
-            $sql="UPDATE ".$ecs->table('users'). "SET `ec_salt`='0' WHERE user_id= '".$user_id."'";
-            $db->query($sql);
+			$sql="UPDATE ".$ecs->table('users'). "SET `ec_salt`='0' WHERE user_id= '".$user_id."'";
+			$db->query($sql);
             $user->logout();
             show_message($_LANG['edit_password_success'], $_LANG['relogin_lnk'], 'user.php?act=login', 'info');
         }
         else
         {
-            show_message($_LANG['edit_password_failure'].'1', $_LANG['back_page_up'], '', 'info');
+            show_message($_LANG['edit_password_failure'], $_LANG['back_page_up'], '', 'info');
         }
     }
     else
@@ -2896,7 +2873,7 @@ elseif ($action == 'act_transform_ucenter_points')
 /* 清除商品浏览历史 */
 elseif ($action == 'clear_history')
 {
-    setcookie('ECS[history]',   '', 1, NULL, NULL, NULL, TRUE);
+    setcookie('ECS[history]',   '', 1);
 }
 /* 物流信息 */
 elseif ($action == 'delivery_info'){
@@ -2954,85 +2931,6 @@ elseif ($action == 'ajax_delivery_info') {
 
     die($json->encode($result));
 
-}elseif($action == 'ajax_validate_sms'){
-    require('admin/includes/lib_main.php');
-    $time= time();
-    $date = date('Ymd',$time);
-    $pre_date = date('Ymd',$time-64000);
-//    $ip = $_SERVER["REMOTE_ADDR"];
-    $ip = ($_SERVER["HTTP_VIA"]) ? $_SERVER["HTTP_X_FORWARDED_FOR"] : $_SERVER["REMOTE_ADDR"];
-    if(file_exists(__FILE__.$pre_date.".txt"))unlink(__FILE__.$pre_date.".txt");//删除昨日记录
-    if(file_exists(__FILE__.$date.".txt")){
-        $send_limit_ip = file_get_contents(__FILE__.$date.".txt");
-        $data = unserialize($send_limit_ip);
-        if(isset($data[$ip]) && $data[$ip]>9){
-            make_json_result('当前IP已超当日限制');exit;
-        }
-    }
-    if(isset($_SESSION['last_send']) && $time<((int)$_SESSION['last_send']+120)){
-        make_json_result(($_SESSION['last_send']+120-$time).'秒后再试');exit;
-    }
-    $post_data = json_decode(str_replace('\\','',$_POST['JSON']),1);
-    //判断是否经过验证码验证
-    if((!isset($_SESSION['v_code']) || $_SESSION['v_code']!='true') && !isset($post_data['no_need_vcode']) ){
-        make_json_result('v_code fail');exit;
-    }
-    $_SESSION['v_code'] = 'false';
-    $mobile = $post_data['mobile'] ? $post_data['mobile'] : false;
-    $is_send = 'fail';
-    if($mobile){
-        // 找回密码验证输入的手机号是否已注册
-        if (isset($post_data['action']) && $post_data['action'] == 'sms_get_password') {
-            $is_reg = $user->check_user($mobile);
-            if (!$is_reg) {
-                make_json_result($_LANG['phone_number_reg_check_fail']);
-                exit();
-            }
-        }
-        $sms_code = mt_rand(100000,999999);
-        include_once('includes/cls_sms.php');
-        $sms =new sms();
-        $_SESSION['sms_code'] = $sms_code;
-        $is_send = $sms->send($mobile,'您本次的验证码为：'.$sms_code.',请不要把验证码泄露给其他人，如非本人操作可不用理会');
-        $is_send = $is_send?'succ':'fail';
-    }
-    //短信发送限制
-    if($is_send == 'succ'){
-        $_SESSION['last_send'] = $time;
-        $data = isset($data)?$data:array();
-        $data[$ip] = isset($data[$ip])?($data[$ip])+1:1;
-        file_put_contents(__FILE__.$date.".txt",serialize($data));
-    }
-    make_json_result($is_send);exit;
-}elseif($action == 'sms_get_password'){
-    include_once(ROOT_PATH . 'includes/lib_passport.php');
-
-    if ($_POST['sms_code'] != '' && $_POST['username'] != '')
-    {
-        $sms_code = trim($_POST['sms_code']);
-        $username  = $_POST['username'];
-        //判断短信验证码
-        if($sms_code == $_SESSION['sms_code']){
-            $user_info = $user->get_profile_by_name($username);
-            // 判断会员是否存在
-            if (!$user_info['user_id']) {
-                show_message(sprintf($_LANG['username_inexistent'], $username), $_LANG['back_page_up'], 'user.php?act=sms_get_password', 'info');
-            }
-            $_SESSION['user_id'] = $user_info['user_id'];
-            $_SESSION['change_password'] = 'true';
-            $user->set_cookie($username);
-            $user->set_session($username);
-            $smarty->assign('action', 'reset_password_rep');
-            $smarty->assign('uid', $user_info['user_id']);
-            $smarty->display('user_passport.dwt');
-        }else{
-            show_message('短信验证码错误', '返回上一页', 'user.php?act=sms_get_password', 'info');
-        }
-    }
-    else
-    {
-        //显示用户名和email表单
-        $smarty->display('user_passport.dwt');
-    }
 }
+
 ?>

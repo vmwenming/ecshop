@@ -19,7 +19,7 @@
         <div class="list-item" ng-class="{active: selectedId == vendor.id}" ng-repeat="vendor in vendors track by $index" ng-click="touchVendor(vendor)">
           <div class="item-checkbox"></div>
           <div class="item-name">{{vendor.name}}</div>
-          <div class="item-price">{{vendor.fee | currency:"￥"}}</div>
+          <div class="item-price">￥{{vendor.fee}}</div>
         </div>
       </div>
 

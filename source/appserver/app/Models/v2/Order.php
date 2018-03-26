@@ -199,12 +199,14 @@ class Order extends BaseModel {
                         'tax'              => 0);
         $weight = 0;
         /* 商品总价 */
+
         if (!$order_products = json_decode($order_product,true)) {
             return self::formatError(self::UNKNOWN_ERROR);
         }
 
         $good_arr = [];
         $good_num = 0;
+
         foreach ($order_products as $key => $product) {
             $val = Goods::where('goods_id',$product['goods_id'])->first();
             
@@ -235,6 +237,8 @@ class Order extends BaseModel {
             $total['discount_price'] += ($val['shop_price'] - $volume_price) * $product['num'] ;
             $total['market_price'] += $val['market_price'] * $product['num'];
         }
+
+
         $goods = Goods::whereIn('goods_id',$good_arr)->get();
 
         $total['saving']    = $total['market_price'] - $total['goods_price'];
@@ -308,7 +312,7 @@ class Order extends BaseModel {
             if(isset($total['bonus_kill']))
             {
                 $use_bonus_kill   = min($total['bonus_kill'], $max_amount);
-                $total['amount'] -=  $price = $total['bonus_kill']; // 还需要支付的订单金额
+                $total['amount'] -=  $price = number_format($total['bonus_kill'], 2, '.', ''); // 还需要支付的订单金额
             }
 
             $total['bonus']   = $use_bonus;
@@ -366,10 +370,10 @@ class Order extends BaseModel {
         $total['formated_market_price'] = Goods::price_format($total['market_price'], false);
         $total['formated_saving']       = Goods::price_format($total['saving'], false);
 
-        $order_price['total_price'] = Goods::price_format($total['amount'], false);
-        $order_price['discount_price'] = Goods::price_format($total['discount_price'], false);
-        $order_price['product_price'] = Goods::price_format($total['goods_price_formated'] + $total['discount_price'], false);
-        $order_price['shipping_price'] = Goods::price_format($total['shipping_fee_formated'], false);
+        $order_price['total_price'] = $total['amount'];
+        $order_price['discount_price'] = $total['discount_price'];
+        $order_price['product_price'] = $total['goods_price_formated'] + $total['discount_price'];
+        $order_price['shipping_price'] = $total['shipping_fee_formated'];
         $order_price['promos'] = [];
         // if (isset($cashgift)) {
             $order_price['promos'][] = ['promo' => 'cashgift','price' => $total['bonus_formated']];
@@ -521,10 +525,9 @@ class Order extends BaseModel {
         $order_goods_arr = OrderGoods::where('order_id', $this->attributes['order_id'])->get();
         $sum = 0;
         foreach ($order_goods_arr as $order_goods) {
-	    if ($goods = Goods::where('goods_id', $order_goods->goods_id)->select('shop_price','give_integral')->first()) {
-                $goods_score = ($goods->give_integral == -1) ? $goods->shop_price:$goods->give_integral;
-                $sum += $goods_score * $order_goods->goods_number;
-            }
+            $goods = Goods::where('goods_id', $order_goods->goods_id)->select('shop_price','give_integral')->first();
+            $goods_score = ($goods->give_integral == -1) ? $goods->shop_price:$goods->give_integral;
+            $sum += $goods_score * $order_goods->goods_number;
         }
         return ['score' => $sum];
     }
@@ -794,7 +797,7 @@ class Order extends BaseModel {
             $region['province'] = $consignee['province'];
             $region['city']     = $consignee['city'];
             $region['district'] = $consignee['district'];
-            $total['shipping_fee'] = Shipping::shipFee($consignee_id, $goods, $shipping);
+            $total['shipping_fee'] = Shipping::findOne($consignee_id, $goods, $shipping);
         }
         $total['shipping_fee_formated']    = Goods::price_format($total['shipping_fee'], false);
 
@@ -848,7 +851,21 @@ class Order extends BaseModel {
         $total['integral'] = $order['integral'];
         $total['integral_formated'] = Goods::price_format($total['integral_money'], false);
 
+        /* 保存订单信息 */
+        // $_SESSION['flow_order'] = $order;
+
         $se_flow_type = isset($_SESSION['flow_type']) ? $_SESSION['flow_type'] : '';
+
+        /* 支付费用 */
+        // if (!empty($order['pay_id']) && ($total['real_goods_count'] > 0 || $se_flow_type != CART_EXCHANGE_GOODS))
+        // {
+        //     $total['pay_fee']      = pay_fee($order['pay_id'], $total['amount'], $shipping_cod_fee);
+        // }
+
+        // $total['pay_fee_formated'] = price_format($total['pay_fee'], false);
+
+        // $total['amount']           += $total['pay_fee']; // 订单总额累加上支付费用
+        // $total['amount_formated']  = price_format($total['amount'], false);
 
         /* 取得可以得到的积分和红包 */
         if ($order['extension_code'] == 'group_buy')

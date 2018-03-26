@@ -135,13 +135,11 @@ if (!defined('IN_ECS'))
     $purview['clear']                = 'clear';
 
 //短信管理
-    $purview['14_sms']               = 'sms_manage';
     $purview['02_sms_my_info']       = 'my_info';
     $purview['03_sms_send']          = 'sms_send';
     $purview['04_sms_charge']        = 'sms_charge';
     $purview['05_sms_send_history']  = 'send_history';
     $purview['06_sms_charge_history']= 'charge_history';
-    $purview['04_sms_sign']          = 'sms_sign';
 
 //推荐管理
     $purview['affiliate']            = 'affiliate';
@@ -153,20 +151,5 @@ if (!defined('IN_ECS'))
     $purview['magazine_list']        = 'magazine_list';
     $purview['view_sendlist']        = 'view_sendlist';
 
-// 云服务中心
-    $purview['01_certificate_manage']= 'certificate_manage';
-    $purview['certificate']          = 'certificate';
-    $purview['service_market']       = 'service_market';
-    $purview['sms_resource']         = 'sms_resource';
-    $purview['logistic_tracking']    = 'logistic_tracking';
-
-// 移动版管理
-    $purview['18_lead_manage']       = 'lead_manage';
-    $purview['banner_mobile']        = 'banner_mobile';
-    $purview['lead']                 = 'lead';
-    $purview['mobile_setting']       = 'mobile_setting';
-    $purview['h5_setting']           = 'h5_setting';
-    $purview['wxa_setting']          = 'wxa_setting';
-    $purview['leancloud']            = 'leancloud';
 
 ?>

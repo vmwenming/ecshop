@@ -651,15 +651,6 @@ if($_REQUEST['act']=='cleardata'){
         $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('back_order'));
         $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('order_action'));
         $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('category'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('users'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('user_account'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('user_address'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('user_bonus'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('user_feed'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('user_rank'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('comment'));
-        $GLOBALS['db']->query("truncate table ".$GLOBALS['ecs']->table('account_log'));
-
         sys_msg($_LANG['clear_success']);
     }else{
         sys_msg($msg);

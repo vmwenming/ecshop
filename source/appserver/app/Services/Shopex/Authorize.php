@@ -16,18 +16,7 @@ class Authorize
         if (!$value) {
             return false;
         }
-
-        $valueJson = unserialize($value);
-		$token = "";
-
-		if(isset($valueJson['token']))
-		{
-			$token = $valueJson['token'];
-		}
-		else{
-			return;
-		}
-		;
+		$token = unserialize($value)['token'];
 		
 		//获取ecshop授权信息
 		$param = array(

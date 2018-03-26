@@ -1,5 +1,4 @@
 <?php
-//
 
 return [
     'secret' => env('TOKEN_SECRET', 'ecmobile'),

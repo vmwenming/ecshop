@@ -34,7 +34,7 @@ define('ROOT_PATH', str_replace('mobile/includes/init.php', '', str_replace('\\'
 @ini_set('session.cache_expire',  180);
 @ini_set('session.use_cookies',   1);
 @ini_set('session.auto_start',    0);
-@ini_set('display_errors',        0);
+@ini_set('display_errors',        1);
 @ini_set("arg_separator.output","&amp;");
 
 if (DIRECTORY_SEPARATOR == '\\')

@@ -150,11 +150,11 @@ elseif ($_REQUEST['act'] == 'post')
 
     // 更新移动端env配置
     $arr = array(
-        'MAIL_HOST' => isset($_POST['value']['501'])      ?   trim($_POST['value']['501']) : '',
+        'MAIL_HOST' => isset($_POST['value']['503'])      ?   trim($_POST['value']['503']) : '',
         'MAIL_PORT' => isset($_POST['value']['502'])      ?   trim($_POST['value']['502']) : '',
-        'MAIL_USERNAME' => isset($_POST['value']['503'])      ?   trim($_POST['value']['503']) : '',
+        'MAIL_USERNAME' => isset($_POST['value']['501'])      ?   trim($_POST['value']['501']) : '',
         'MAIL_PASSWORD' => isset($_POST['value']['504'])      ?   trim($_POST['value']['504']) : '',
-        'MAIL_FROM_ADDRESS' => isset($_POST['value']['505'])      ?   trim($_POST['value']['505']) : '',
+        'MAIL_FROM_ADDRESS' => isset($_POST['value']['501'])      ?   trim($_POST['value']['501']) : '',
         );
     $is_succ = create_env($arr,'appserver');
 

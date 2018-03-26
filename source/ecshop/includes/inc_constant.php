@@ -270,8 +270,7 @@ define('GOODS_CODE','goods_1097');
 
 /* 版本地址 */
 define('VERSION_GBK', 'http://cloud.ecshop.com/version/release_gbk.txt');
-//define('VERSION_UTF8', 'http://cloud.ecshop.com/version/release_utf8.txt');
-define('VERSION_UTF8', 'http://update.shopex.com.cn/version/program/ECShop/ecshop_version_list.txt');
+define('VERSION_UTF8', 'http://cloud.ecshop.com/version/release_utf8.txt');
 
 /* debug start */
 define('DEBUG_API' , true);

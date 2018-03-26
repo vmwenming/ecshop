@@ -11,15 +11,11 @@
     function AppAuthenticationService($rootScope, $localStorage, $cookies) {
 
         // keep user logged in after page refresh
-        try{
-            $rootScope.user = $cookies.getObject( 'u' );
-            $rootScope.token = $cookies.get( 't' );
-            $rootScope.openId = $cookies.get( 'o' );
-            $rootScope.references = $cookies.get( 'r' );
-        }
-        catch(e){
+        $rootScope.user = $cookies.getObject( 'u' );
+        $rootScope.token = $cookies.get( 't' );
+        $rootScope.openId = $cookies.get( 'o' );
+        $rootScope.references = $cookies.get( 'r' );
 
-        }
 
         var service = {};
         service.signin = _signin;
@@ -64,35 +60,24 @@
         function _setCredentials( token, user ) {
             $rootScope.user = user;
             $rootScope.token = token;
-            try{
-                // save to cookie storage
-                var exdate = new Date();
-                exdate.setDate(exdate.getDate()+EXPIRED_DAY);
-                exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
 
-                $cookies.putObject( 'u', user , {'expires': exdate});
-                $cookies.put( 't', token ,{'expires': exdate});
-            }
-            catch(e){
+            // save to cookie storage
+            var exdate = new Date();
+            exdate.setDate(exdate.getDate()+EXPIRED_DAY);
+            exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
 
-            }
+            $cookies.putObject( 'u', user , {'expires': exdate});
+            $cookies.put( 't', token ,{'expires': exdate});
         }
 
         function _setReferences(references){
             $rootScope.references = references;
+            // save to cookie storage
+            var exdate = new Date();
+            exdate.setDate(exdate.getDate()+EXPIRED_DAY);
+            exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
 
-            try{
-                // save to cookie storage
-                var exdate = new Date();
-                exdate.setDate(exdate.getDate()+EXPIRED_DAY);
-                exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
-
-                $cookies.put( 'r', references ,{'expires': exdate});                
-            }
-            catch(e){
-
-            }
-
+            $cookies.put( 'r', references ,{'expires': exdate});
 
         }
 
@@ -118,37 +103,26 @@
         }
         function _setUser(user) {
             $rootScope.user = user;
-            
-            try{
-               var options = {};
-                var exdate = new Date();
-                exdate.setDate(exdate.getDate()+EXPIRED_DAY);
-                exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
-                options.expires =  exdate;
-                $cookies.putObject( 'u', user ,options); 
-            }   
-            catch(e){
 
-            }             
-
+            var options = {};
+            var exdate = new Date();
+            exdate.setDate(exdate.getDate()+EXPIRED_DAY);
+            exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
+            options.expires =  exdate;
+            $cookies.putObject( 'u', user ,options);
         }
 
         function _setToken( token ) {
             $rootScope.token = token;
 
-            try{
-                // save to cookie storage
-                var options = {};
-                var exdate = new Date();
-                exdate.setDate(exdate.getDate()+EXPIRED_DAY);
-                exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
-                options.expires =  exdate;
+            // save to cookie storage
+            var options = {};
+            var exdate = new Date();
+            exdate.setDate(exdate.getDate()+EXPIRED_DAY);
+            exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
+            options.expires =  exdate;
 
-                $cookies.put( 't', token ,options);
-            }   
-            catch(e){
-
-            }  
+            $cookies.put( 't', token ,options);
         }
 
         function _getToken() {
@@ -159,20 +133,15 @@
 
             $rootScope.openId = openId;
 
-            try{
-                // save to cookie storage
-                var options = {};
-                var exdate = new Date();
-                exdate.setDate(exdate.getDate()+EXPIRED_DAY);
-                exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
-                options.expires =  exdate;
-                $cookies.put( 'o', openId,options);
-            }
-            catch(e){
-
-            }
+            // save to cookie storage
+            var options = {};
+            var exdate = new Date();
+            exdate.setDate(exdate.getDate()+EXPIRED_DAY);
+            exdate.setMinutes(exdate.getMinutes()+EXPIRED_MINUTE);
+            options.expires =  exdate;
+            $cookies.put( 'o', openId,options);
         }
-        //获取id
+
         function _getOpenId(){
             return $rootScope.openId;
         }

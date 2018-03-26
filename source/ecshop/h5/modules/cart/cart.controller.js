@@ -91,7 +91,7 @@
 		function _touchAmountAdd(target) {
 			$scope
 				.cartModel
-				.update(target.id, Number(target.amount) + 1)
+				.update(target.id, target.amount + 1)
 				.then(function (succeed) {
 					if (succeed) {
 						// TODO:
@@ -107,7 +107,7 @@
 
 			$scope
 				.cartModel
-				.update(target.id, Number(target.amount) - 1)
+				.update(target.id, target.amount - 1)
 				.then(function (succeed) {
 					if (succeed) {
 						// TODO:
@@ -171,7 +171,7 @@
 			var goods = $scope.selectedGoods;
 
 			for (var i = 0; i < goods.length; ++i) {
-				amount += Number(goods[i].amount);
+				amount += goods[i].amount;
 				price += goods[i].amount * goods[i].price;
 			}
 

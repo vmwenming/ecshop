@@ -32,8 +32,8 @@
             <div class="list-item" ng-repeat="balance in myBalanceModel.balances track by $index">
                 <div class="item-info">
                     <div class="info_header">
-                        <div class="info-name" ng-if="balance.status == 1">{{'+'+balance.price | currency:""}}</div>
-                        <div class="info-name" ng-if="balance.status == 2">{{'-'+balance.price | currency:""}}</div>
+                        <div class="info-name" ng-if="balance.status == 1">{{'+'+balance.price}}</div>
+                        <div class="info-name" ng-if="balance.status == 2">{{'-'+balance.price}}</div>
                         <div class="info-value-income" ng-if="balance.status == 1">收入</div>
                         <div class="info-value-out" ng-if="balance.status == 2">支出</div>
                     </div>

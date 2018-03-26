@@ -1,5 +1,4 @@
 <?php
-//
 
 return [
     
@@ -8,10 +7,6 @@ return [
     'name' => env('APP_NAME', 'ECAPI'),
 
     'shop_url' => env('SHOP_URL', ''),
-
-    'share_url' => env('SHARE_URL', ''),
-
-    'shop_h5' => env('SHOP_H5', ''),
 
     'json_cdn' => env('JSON_CDN', ''),
 
@@ -54,5 +49,5 @@ return [
     |
     */
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
-    'log_max_files' => 30,
+
 ];

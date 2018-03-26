@@ -1,5 +1,4 @@
 <?php
-//
 
 namespace App\Http\Controllers\v2;
 
@@ -13,20 +12,9 @@ use App\Models\v2\Comment;
 use App\Models\v2\GoodsCategory;
 use App\Models\v2\CollectGoods;
 use App\Models\v2\Products;
-use Log;
 
 class GoodsController extends Controller
 {
-    /**
-     * POST /ecapi.home.product.list
-     */
-    public function home()
-    {
-        $data = Goods::getHomeList();
-
-        return $this->json($data);
-    }
-
     /**
      * POST /ecapi.product.list
      */
@@ -273,7 +261,7 @@ class GoodsController extends Controller
         }
 
         $data = Goods::getInfo($this->validated);
-        
+
         return $this->json($data);
     }
 

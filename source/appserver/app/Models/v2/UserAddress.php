@@ -17,7 +17,7 @@ class UserAddress extends BaseModel
 
     protected $appends = ['id', 'name', 'zip_code', 'regions', 'is_default'];
 
-    protected $visible = ['id', 'name', 'mobile', 'tel', 'zip_code', 'regions', 'country','province','city', 'address', 'is_default'];
+    protected $visible = ['id', 'name', 'mobile', 'tel', 'zip_code', 'regions', 'country','province','city','address', 'is_default'];
 
     public static function getList()
     {
@@ -53,7 +53,7 @@ class UserAddress extends BaseModel
     {
         extract($attributes);
         $uid = Token::authorization();
-	// UserAddress::where('address_id', $consignee)->where('user_id', $uid)->delete();
+    	// UserAddress::where('address_id', $consignee)->where('user_id', $uid)->delete();
 	if (UserAddress::where('address_id', $consignee)->where('user_id', $uid)->delete()) {
             if ($address = UserAddress::where('user_id', $uid)->first()) {
                 $model = Member::where('user_id', $uid)->first();

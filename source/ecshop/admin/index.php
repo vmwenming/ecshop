@@ -313,30 +313,6 @@ elseif ($_REQUEST['act'] == 'main')
     }
     clearstatcache();
 
-
-    //版本检查
-    $release_url = VERSION_UTF8;
-    $_content = file_get_contents($release_url);
-    $version_all = array_filter(explode("\n",$_content));
-    $app_version = get_appserver_verison();
-    $h5_version = get_h5_version();
-    foreach($version_all as $v){
-        $item = json_decode($v,1);
-        if($item['date']>intval(RELEASE)){
-            $message = "您现在不是最新版本，最新版本(".$item['version']."-".$item['date'].")下载地址：<a style='color:white' href='".$item['url']."' target='_blank'>".$item['url']."</a>";
-            break;
-        }
-        if( $h5_version && ( $h5_version < intval(str_replace(array('.','v'),'',$item['h5_version'])))){
-            $message = "您的H5现在不是最新版本，新版本(".$item['version']."-".$item['date'].")下载地址：<a href='".$item['url']."' target='_blank'>".$item['url']."</a>";
-            break;
-        }
-        if( $app_version && ( $app_version < intval(str_replace(array('.','v'),'',$item['app_version'])))){
-            $message = "您的APPSERVER现在不是最新版本，新版本(".$item['version']."-".$item['date'].")下载地址：<a href='".$item['url']."' target='_blank'>".$item['url']."</a>";
-            break;
-        }
-    }
-    if($message)$smarty->assign('update_message', $message);
-
     $smarty->assign('warning_arr', $warning);
     
 
@@ -518,8 +494,6 @@ elseif ($_REQUEST['act'] == 'main')
     $smarty->assign('new_repay', $db->getOne('SELECT COUNT(*) FROM ' . $ecs->table('user_account') . ' WHERE process_type = ' . SURPLUS_RETURN . ' AND is_paid = 0 '));
 
     assign_query_info();
-
-    $smarty->assign('msg',  $message);
     $smarty->assign('ecs_version',  VERSION);
     $smarty->assign('ecs_release',  RELEASE);
     $smarty->assign('ecs_lang',     $_CFG['lang']);
@@ -1342,23 +1316,5 @@ function license_check()
     }
 
     return $return_array;
-}
-function get_appserver_verison(){
-    /*$path_arr = explode('/',ROOT_PATH);
-    $count = count($path_arr)-2;
-    $name = $path_arr[$count].'/';
-    $path = str_replace($name,'',ROOT_PATH).'appserver/version.txt';
-    $content = file_get_contents($path);*/
-    $content = file_get_contents(ROOT_PATH.'../appserver/version.txt');
-    return str_replace(array('.','v'),'',$content);
-}
-function get_h5_version(){
-    /*$path_arr = explode('/',ROOT_PATH);
-    $count = count($path_arr)-1;
-    $name = $path_arr[$count].'/';
-    $path = str_replace($name,'',ROOT_PATH).'h5/version.txt';
-    $content = file_get_contents($path);*/
-    $content = file_get_contents(ROOT_PATH.'h5/version.txt');
-    return str_replace(array('.','v'),'',$content);
 }
 ?>

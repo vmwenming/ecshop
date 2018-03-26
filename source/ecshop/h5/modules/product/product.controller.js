@@ -6,22 +6,22 @@
   .module('app')
   .controller('ProductController', ProductController);
 
-  ProductController.$inject = ['$scope', '$http', '$window', '$timeout', '$location', '$state', '$stateParams', 'API', 'ENUM', 'AppAuthenticationService', 'ConfirmProductService', 'CartModel','ConfigModel'];
+  ProductController.$inject = ['$scope', '$http', '$window', '$timeout', '$location', '$state', '$stateParams', 'API', 'ENUM', 'AppAuthenticationService', 'ConfirmProductService', 'CartModel'];
 
-  function ProductController($scope, $http, $window, $timeout, $location, $state, $stateParams, API, ENUM, AppAuthenticationService, ConfirmProductService, CartModel,ConfigModel) {
+  function ProductController($scope, $http, $window, $timeout, $location, $state, $stateParams, API, ENUM, AppAuthenticationService, ConfirmProductService, CartModel) {
 
       var MAX_COMMENTS = 3;
+
       var productId = $stateParams.product;
 
-      $scope.currentStock = null; //当前库存
-      $scope.currentAttrs = [];   //单选属性
-      $scope.currentSelectedPrice = 0;   //单选属性
+      $scope.currentStock = null;
+      $scope.currentAttrs = [];
       $scope.input = {
           currentAmount: 1
       };
 
-      $scope.optionalAttrs = []; //多选属性
-      $scope.canPurchase = false;//是否可以购买
+      $scope.optionalAttrs = [];
+      $scope.canPurchase = false;
 
       $scope.product = null;
       $scope.comments = [];
@@ -64,14 +64,14 @@
             return;
         }
 
-          $scope.input.currentAmount = (amount - 1);
+          $scope.input.currentAmount = '' + (amount - 1);
       }
 
       function _refreshAmount(){
 
           var amount = parseInt($scope.input.currentAmount);
           if (amount < 1) {
-              $scope.input.currentAmount = 1;
+              $scope.input.currentAmount = 1+"";
           }
 
       }
@@ -92,14 +92,14 @@
           if ( amount >= stock )
             return;
 
-            $scope.input.currentAmount = (amount + 1);
+            $scope.input.currentAmount = '' + (amount + 1);
         } else {
           var amount = parseInt($scope.input.currentAmount);
           var stock = $scope.product.good_stock;
           if ( amount >= stock )
             return;
 
-            $scope.input.currentAmount =  (amount + 1);
+            $scope.input.currentAmount = '' + (amount + 1);
         }
 
       }
@@ -119,7 +119,6 @@
             attrs.splice( index, 1 );
           }
           $scope.optionalAttrs = attrs;
-          _refreshPrice();
         } else {
           var stock = null;
           var attrs = [].concat( $scope.currentAttrs );
@@ -147,16 +146,7 @@
           if ( attrs.length ) {
             var key = attrs.join('|');
             for ( var i = 0; i < product.stock.length; ++i ) {
-              var goods_attr = product.stock[i].goods_attr;
-              var goods_attr_array =  goods_attr.split("|");
-
-              goods_attr_array.sort(function(a, b){
-                return a - b;
-              })
-
-              var goods_attr_str = goods_attr_array.join('|');
-
-              if ( goods_attr_str == key ) {
+              if ( product.stock[i].goods_attr == key ) {
                 stock = product.stock[i];
                 break;
               }
@@ -166,7 +156,6 @@
           $scope.currentAttrs = attrs;
           $scope.currentStock = stock;
           $scope.canPurchase = _checkCanPurchase();
-          _refreshPrice();
         }
       }
 
@@ -232,7 +221,7 @@
         }
 
         var attrs = [].concat($scope.currentAttrs).concat($scope.optionalAttrs);
-        var amount = Number($scope.input.currentAmount);
+        var amount = $scope.input.currentAmount;
 
         CartModel
         .add(productId, attrs, amount)
@@ -254,7 +243,7 @@
 
         var product = $scope.product;
         var attrs = [].concat($scope.currentAttrs).concat($scope.optionalAttrs);
-        var amount = Number($scope.input.currentAmount);
+        var amount = $scope.input.currentAmount;
 
         ConfirmProductService.clear();
         ConfirmProductService.product = product;
@@ -262,23 +251,6 @@
         ConfirmProductService.amount = amount;
 
         $state.go('confirm-product', {});
-      }
-
-      function _refreshPrice(){
-        var attrs = [].concat($scope.currentAttrs).concat($scope.optionalAttrs);
-
-          $scope.currentSelectedPrice = parseFloat($scope.product.current_price);
-
-          for ( var i = 0; i < $scope.product.properties.length; ++i ) {
-            var property = $scope.product.properties[i];
-            
-            for ( var j in property.attrs ) {              
-                var index = attrs.indexOf( property.attrs[j].id );
-                if ( -1 != index && property.attrs[j].attr_price)  {
-                    $scope.currentSelectedPrice += parseFloat(property.attrs[j].attr_price);
-                }              
-            }
-          }
       }
 
       function _checkCanPurchase() {
@@ -328,12 +300,11 @@
 
       function _reloadProduct() {
         $scope.isLoading = true;
-
         API.product
         .get({product:productId})
         .then(function(product){
 
-        product.properties.sort(function(a, b){
+          product.properties.sort(function(a, b){
             return a.is_multiselect - b.is_multiselect;
           })
 
@@ -341,27 +312,6 @@
           $scope.isLoaded = true;
           $scope.isLoading = false;
           $scope.canPurchase = _checkCanPurchase();
-          var config = ConfigModel.getConfig();
-          if(config){
-            var wechat = config['wxpay.web'];
-            if(wechat){
-              _initConfig(wechat,$scope.product);  
-            }
-            
-          }
-          else{
-            ConfigModel.fetch().then(function(){
-              var config = ConfigModel.getConfig();
-              if(config){
-                  var wechat = config['wxpay.web'];
-                  if(wechat){
-                    _initConfig(wechat,$scope.product);  
-                  }                
-              }
-            });            
-          }
-         
-
 
           if ( product.photos && product.photos.length > 1 ) {
             var timer = $timeout( function() {
@@ -406,16 +356,7 @@
           if ( defaultAttrIds.length ) {
             var stockSelector = defaultAttrIds.join('|');
             for ( var i = 0; i < product.stock.length; ++i ) {
-
-              var goods_attr = product.stock[i].goods_attr;
-              var goods_attr_array =  goods_attr.split("|");
-
-              goods_attr_array.sort(function(a, b){
-                return a - b;
-              })
-
-             var goods_attr_str = goods_attr_array.join('|');
-              if ( goods_attr_str == stockSelector ) {
+              if ( product.stock[i].goods_attr == stockSelector ) {
                 defaultAttrStock = product.stock[i];
                 break;
               }
@@ -426,90 +367,9 @@
           $scope.currentAttrs = defaultAttrIds;
           $scope.currentStock = defaultAttrStock;
           $scope.canPurchase = _checkCanPurchase();
-          _refreshPrice();
+
           _reloadComments();
         });
-      }
-
-      function _initConfig(wechat,product){
-
-                if ( !wechat ) {
-                    return;
-                };
-                var url = product.share_url?product.share_url:product.share_link;
-                wx.config({
-                    debug: GLOBAL_CONFIG.DEBUG, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
-                    appId: wechat.app_id, // 必填，公众号的唯一标识
-                    timestamp: wechat.timestamp, // 必填，生成签名的时间戳
-                    nonceStr: wechat.nonceStr, // 必填，生成签名的随机串
-                    signature: wechat.signature,// 必填，签名，见附录1
-                    jsApiList: ['chooseWXPay',
-                        'onMenuShareAppMessage',
-                        'onMenuShareTimeline',
-                        'onMenuShareAppMessage',
-                        'onMenuShareQQ'] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
-                });
-
-                wx.ready( function() {
-                    wx.onMenuShareTimeline({
-                        title: '商品详情', // 分享标题
-                        desc:product.name,
-                        link: url, // 分享链接
-                        imgUrl: product.default_photo.large, // 分享图标
-                        success: function () {
-                            // 用户确认分享后执行的回调函数
-                        },
-                        cancel: function () {
-                            // 用户取消分享后执行的回调函数
-                        }
-                    });
-
-                    wx.onMenuShareAppMessage({
-                        title: '商品详情', // 分享标题
-                        desc:product.name,
-                        link: url, // 分享链接
-                        imgUrl: product.default_photo.large, // 分享图标
-                        success: function () {
-                            // 用户确认分享后执行的回调函数
-                        },
-                        cancel: function () {
-                            // 用户取消分享后执行的回调函数
-                        }
-                    });
-
-                    wx.onMenuShareQQ({
-                        title: '商品详情', // 分享标题
-                        desc:product.name,
-                        link: url, // 分享链接
-                        imgUrl: product.default_photo.large, // 分享图标
-                        success: function () {
-                            // 用户确认分享后执行的回调函数
-                        },
-                        cancel: function () {
-                            // 用户取消分享后执行的回调函数
-                        }
-                    });
-                    wx.onMenuShareWeibo({
-                          title: '商品详情', // 分享标题
-                        desc:product.name,
-                        link: url, // 分享链接
-                        imgUrl: product.default_photo.large, // 分享图标
-                        success: function () {
-                            // 用户确认分享后执行的回调函数
-                        },
-                        cancel: function () {
-                            // 用户取消分享后执行的回调函数
-                        }
-                    });
-
-                });
-
-                wx.error(function(res){
-                    if(GLOBAL_CONFIG.DEBUG){
-                        $rootScope.toast(JSON.stringify(res));
-                    }
-                });
-
       }
 
       function _reloadComments() {
@@ -532,7 +392,6 @@
       }
 
       _reload();
-      
   }
 
 })();

@@ -1141,7 +1141,7 @@ elseif ($_REQUEST['act'] == 'insert' || $_REQUEST['act'] == 'update')
     }
 
     /* 记录上一次选择的分类和品牌 */
-    setcookie('ECSCP[last_choose]', $catgory_id . '|' . $brand_id, gmtime() + 86400, NULL, NULL, NULL, TRUE);
+    setcookie('ECSCP[last_choose]', $catgory_id . '|' . $brand_id, gmtime() + 86400);
     /* 清空缓存 */
     clear_cache_files();
 
@@ -2187,7 +2187,6 @@ elseif ($_REQUEST['act'] == 'product_list')
 
     /* 获取商品规格列表 */
     $attribute = get_goods_specifications_list($goods_id);
-
     if (empty($attribute))
     {
         $link[] = array('href' => 'goods.php?act=edit&goods_id=' . $goods_id, 'text' => $_LANG['edit_goods']);
@@ -2200,36 +2199,17 @@ elseif ($_REQUEST['act'] == 'product_list')
         $_attribute[$attribute_value['attr_id']]['attr_id'] = $attribute_value['attr_id'];
         $_attribute[$attribute_value['attr_id']]['attr_name'] = $attribute_value['attr_name'];
     }
-
     $attribute_count = count($_attribute);
 
     $smarty->assign('attribute_count',          $attribute_count);
     $smarty->assign('attribute_count_3',        ($attribute_count + 3));
+    $smarty->assign('attribute',                $_attribute);
     $smarty->assign('product_sn',               $goods['goods_sn'] . '_');
     $smarty->assign('product_number',           $_CFG['default_storage']);
 
     /* 取商品的货品 */
     $product = product_list($goods_id, '');
 
-    //保证属性排序正确
-    $attr_list = array();
-    foreach($product['product'] as  $item){
-        foreach($item['goods_attr'] as $k => $attr){
-            $attr_list[$k][] = $attr;
-        }
-    }
-    $new_attribute = array();
-    foreach($attr_list as $v){
-        foreach($_attribute as $val){
-            $diff = array_diff($v,$val['attr_values']);
-            if(empty($diff)){
-                $new_attribute[] =  $val;
-            }
-        }
-    }
-    if(empty($new_attribute))$new_attribute = $_attribute;
-
-    $smarty->assign('attribute',                $new_attribute);
     $smarty->assign('ur_here',      $_LANG['18_product_list']);
     $smarty->assign('action_link',  array('href' => 'goods.php?act=list', 'text' => $_LANG['01_goods_list']));
     $smarty->assign('product_list', $product['product']);

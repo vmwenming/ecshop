@@ -3,11 +3,11 @@
 --
 
 INSERT INTO `ecs_account_log` (`log_id`, `user_id`, `user_money`, `frozen_money`, `rank_points`, `pay_points`, `change_time`, `change_desc`, `change_type`) VALUES
-(1, 2, 1100000.00, 0.00, 0, 0, 1242140736, '11', 2),
-(2, 1, 400000.00, 0.00, 0, 0, 1242140752, '21312', 2),
+(1, 5, 1100000.00, 0.00, 0, 0, 1242140736, '11', 2),
+(2, 3, 400000.00, 0.00, 0, 0, 1242140752, '21312', 2),
 (3, 2, 300000.00, 0.00, 0, 0, 1242140775, '300000', 2),
 (4, 1, 50000.00, 0.00, 0, 0, 1242140811, '50', 2),
-(5, 2, 0.00, 10000.00, 0, 0, 1242140853, '32', 2),
+(5, 5, 0.00, 10000.00, 0, 0, 1242140853, '32', 2),
 (6, 1, -400.00, 0.00, 0, 0, 1242142274, '支付訂單 2009051298180', 99),
 (7, 1, -975.00, 0.00, 0, 0, 1242142324, '支付訂單 2009051255518', 99),
 (8, 1, 0.00, 0.00, 960, 960, 1242142390, '訂單 2009051255518 贈送的積分', 99),
@@ -24,7 +24,7 @@ INSERT INTO `ecs_account_log` (`log_id`, `user_id`, `user_money`, `frozen_money`
 (19, 1, 0.00, 0.00, -960, -960, 1242144185, '由於退貨或未發貨操作，退回訂單 2009051255518 贈送的積分', 99),
 (20, 1, 975.00, 0.00, 0, 0, 1242144185, '由於取消、無效或退貨操作，退回支付訂單 2009051255518 時使用的預付款', 99),
 (21, 1, 0.00, 0.00, 960, 960, 1242576445, '訂單 2009051719232 贈送的積分', 99),
-(22, 1, -1000.00, 0.00, 0, 0, 1242973612, '追加使用余額支付訂單：2009051227085', 99),
+(22, 3, -1000.00, 0.00, 0, 0, 1242973612, '追加使用余額支付訂單：2009051227085', 99),
 (23, 1, -13806.60, 0.00, 0, 0, 1242976699, '支付訂單 2009052224892', 99),
 (24, 1, 0.00, 0.00, 14045, 14045, 1242976740, '訂單 2009052224892 贈送的積分', 99),
 (25, 1, 0.00, 0.00, -2300, -2300, 1245045334, '由於退貨或未發貨操作，退回訂單 2009051267570 贈送的積分', 99),
@@ -1139,14 +1139,14 @@ INSERT INTO `ecs_topic` (`topic_id`, `title`, `intro`, `start_time`, `end_time`,
 --
 INSERT INTO `ecs_users` (`user_id`, `email`, `user_name`, `password`, `question`, `answer`, `sex`, `birthday`, `user_money`, `frozen_money`, `pay_points`, `rank_points`, `address_id`, `reg_time`, `last_login`, `last_time`, `last_ip`, `visit_count`, `user_rank`, `is_special`, `ec_salt`, `salt`, `parent_id`, `flag`, `alias`, `msn`, `qq`, `office_phone`, `home_phone`, `mobile_phone`, `is_validated`, `credit_line`, `passwd_question`, `passwd_answer`)
 VALUES
-	(1,'ecshop@ecshop.com','ecshop','6526fa13f6c5804fc8aaefa25395aba3','','',0,'1960-03-03',0.00,0.00,0,0,1,1505271600,1462949764,'0000-00-00 00:00:00','180.169.8.10',15,0,0,'1619','0',0,0,'','','','','','',0,0.00,NULL,NULL),
-	(2,'vip@ecshop.com','vip','232059cb5361a9336ccf1b8c2ba7657a','','',0,'1949-01-01',0.00,0.00,0,0,0,1505271600,0,'0000-00-00 00:00:00','',0,0,0,NULL,'0',0,0,'','','','','','',0,0.00,NULL,NULL);
+	(1,'ecshop@ecshop.com','ecshop','6526fa13f6c5804fc8aaefa25395aba3','','',0,'1960-03-03',0.00,0.00,0,0,1,0,1462949764,'0000-00-00 00:00:00','180.169.8.10',15,0,0,'1619','0',0,0,'','','','','','',0,0.00,NULL,NULL),
+	(2,'vip@ecshop.com','vip','232059cb5361a9336ccf1b8c2ba7657a','','',0,'1949-01-01',0.00,0.00,0,0,0,0,0,'0000-00-00 00:00:00','',0,0,0,NULL,'0',0,0,'','','','','','',0,0.00,NULL,NULL);
 --
 -- `ecs_user_address`
 --
 INSERT INTO `ecs_user_address` (`address_id`, `address_name`, `user_id`, `consignee`, `email`, `country`, `province`, `city`, `district`, `address`, `zipcode`, `tel`, `mobile`, `sign_building`, `best_time`) VALUES
 (1, '', 1, '劉先生', 'ecshop@ecshop.com', 1, 2, 52, 502, '海興大廈', '', '010-25851234', '13986765412', '', ''),
-(2, '', 2, '葉先生', 'text@ecshop.com', 1, 2, 52, 510, '通州區旗艦凱旋小區', '', '13588104710', '', '', '');
+(2, '', 3, '葉先生', 'text@ecshop.com', 1, 2, 52, 510, '通州區旗艦凱旋小區', '', '13588104710', '', '', '');
 
 --
 -- `ecs_user_bonus`
@@ -1247,6 +1247,14 @@ VALUES
 	(37,'c',32,'冰箱',0,120,0,'category.php?id=32','middle'),
 	(38,'c',29,'家用空調',0,122,0,'category.php?id=29','middle'),
 	(39,'c',25,'數碼時尚',1,124,0,'category.php?id=25','middle');
+
+--
+-- `ecs_admin_user`
+--
+
+INSERT INTO `ecs_admin_user` (`user_id`, `user_name`, `email`, `password`, `add_time`, `last_login`, `last_ip`, `action_list`, `nav_list`, `lang_type`, `agency_id`, `suppliers_id`, `todolist`) VALUES
+(2, 'bjgonghuo1', 'bj@163.com', 'd0c015b6eb9a280f318a4c0510581e7e', 1245044099, 0, '', '', '商品列表|goods.php?act=list,訂單列表|order.php?act=list,用戶評論|comment_manage.php?act=list,會員列表|users.php?act=list,商店設置|shop_config.php?act=list_edit', '', 0, 1, ''),
+(3, 'shhaigonghuo1', 'shanghai@163.com', '4146fecce77907d264f6bd873f4ea27b', 1245044202, 0, '', '', '商品列表|goods.php?act=list,訂單列表|order.php?act=list,用戶評論|comment_manage.php?act=list,會員列表|users.php?act=list,商店設置|shop_config.php?act=list_edit', '', 0, 2, '');
 
 --
 -- `ecs_shop_config`

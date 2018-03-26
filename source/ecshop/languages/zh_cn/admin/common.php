@@ -366,6 +366,5 @@ $_LANG['banner_mobile'] = '移动端广告配置';
 $_LANG['lead'] = 'H5店铺二维码';
 $_LANG['mobile_setting'] = 'APP应用配置';
 $_LANG['h5_setting'] = 'H5应用配置';
-$_LANG['wxa_setting'] = '小程序应用配置';
 $_LANG['leancloud'] = 'APP推送管理';
 ?>

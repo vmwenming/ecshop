@@ -37,7 +37,7 @@ class Notice extends BaseModel
 
      public function getTitleAttribute()
      {
-         return mb_substr($this->attributes['value'], 0, 20, 'utf-8') . '...';
+         return mb_substr($this->attributes['value'], 0, 6, 'utf-8') . '...';
      }
 
      public function getUrlAttribute()

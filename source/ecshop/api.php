@@ -2350,7 +2350,7 @@ function ome_create_reimburse(){
     $is_succ = update_order_crm($order['order_sn']);
     // 退款请求crm
     $data['order_id'] = $order['order_sn'];
-    // $data['cur_money'] = $order['total_fee'];
+    $data['cur_money'] = $order['total_fee'];
     send_refund_to_crm($data);
 
     // 退款通知到erp
@@ -2449,7 +2449,7 @@ function ome_create_delivery(){
         $delivery['shipping_name'] = $shipping['shipping_name'];
 
         // 判断发货单是否存在
-        $sql = "select delivery_id from ".$GLOBALS['ecs']->table('delivery_order')." where delivery_sn = '".$data['delivery_id']."'";
+        $sql = "select delivery_id from ".$GLOBALS['ecs']->table('delivery_order')." where delivery_sn = ".$data['delivery_id'];
         if($GLOBALS['db']->getOne($sql)){
             api_err('0x003', '发货单已经存在不能重复添加');
         }
@@ -3475,10 +3475,11 @@ function gallery($goods_data, $goods)
         }
     }
 
-    include_once(ROOT_PATH . '/' . ADMIN_PATH . '/includes/lib_goods.php');
-    include_once(ROOT_PATH . '/includes/cls_image.php');
     //筛选出没有保存的图片
     if ($images = array_diff($images, $tmp_img_arr)) {
+        require_once(ROOT_PATH . '/' . ADMIN_PATH . '/includes/lib_goods.php');
+        include_once(ROOT_PATH . '/includes/cls_image.php');
+
         $_CFG = load_config();
         $GLOBALS['image'] = new cls_image($_CFG['bgcolor']);
         $image_files = array('name' => array(''), 'type' => array(''), 'tmp_name' => array(''), 'error' => array('4'), 'size' => array('0'));
@@ -3487,22 +3488,13 @@ function gallery($goods_data, $goods)
         foreach ($images as $img) {
             handle_gallery_image($goods['goods_id'], $image_files, $image_descs, array($img));
             // 更新商品默认图
-            // if ($img == $defaultimage) {
-                // $GLOBALS['image'] = new cls_image($_CFG['bgcolor']);
-                // $thumb_default_image = $GLOBALS['image']->make_thumb($defaultimage, $GLOBALS['_CFG']['image_width'], $GLOBALS['_CFG']['image_width']);
-                // $sql = "UPDATE " . $ecs->table('goods') . " SET goods_thumb = '{$thumb_default_image}', goods_img = '{$thumb_default_image}', original_img = '{$img}' WHERE `goods_id` = {$goods['goods_id']}";
-                // $db->query($sql);
-            // }
+            if ($img == $defaultimage) {
+                $GLOBALS['image'] = new cls_image($_CFG['bgcolor']);
+                $thumb_default_image = $GLOBALS['image']->make_thumb($defaultimage, $GLOBALS['_CFG']['image_width'], $GLOBALS['_CFG']['image_width']);
+                $sql = "UPDATE " . $ecs->table('goods') . " SET goods_thumb = '{$thumb_default_image}', goods_img = '{$thumb_default_image}', original_img = '{$img}' WHERE `goods_id` = {$goods['goods_id']}";
+                $db->query($sql);
+            }
         }
-    }
-    
-    // 更新商品默认图
-    if($defaultimage) {
-        $_CFG = load_config();
-        $GLOBALS['image'] = new cls_image($_CFG['bgcolor']);
-        $thumb_default_image = $GLOBALS['image']->make_thumb($defaultimage, $GLOBALS['_CFG']['image_width'], $GLOBALS['_CFG']['image_width']);
-        $sql = "UPDATE " . $ecs->table('goods') . " SET goods_thumb = '{$thumb_default_image}', goods_img = '{$thumb_default_image}', original_img = '{$img}' WHERE `goods_id` = {$goods['goods_id']}";
-        $db->query($sql);
     }
 }
 
