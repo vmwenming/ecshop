@@ -23,6 +23,7 @@ class oauth2{
     public function get_token($code)
     {
         $url = "{$this->oauth}/token";
+        
         $data = array(
             'grant_type' => 'authorization_code',
             'code' => $code,

@@ -1,4 +1,5 @@
 <?php
+
 /*
 1、将此文件放到安装包或补丁包下 和ecshop、appserver同一级目录
 2、检测时 先将安装包或补丁包解压后 放到生产环境的ecshop目录下（路径例如:ecshop/patch文件夹/check_file.php） 执行下此文件 

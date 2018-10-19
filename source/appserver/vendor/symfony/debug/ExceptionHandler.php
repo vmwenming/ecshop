@@ -206,7 +206,7 @@ class ExceptionHandler
                 $title = 'Sorry, the page you are looking for could not be found.';
                 break;
             default:
-                $title = 'Whoops, looks like something went wrong.';
+                $title = 'Whoops, looks like something went wrong2.';
         }
 
         $content = '';

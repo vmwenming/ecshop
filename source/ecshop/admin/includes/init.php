@@ -12,6 +12,7 @@
  * $Author: liubo $
  * $Id: init.php 17217 2011-01-19 06:29:08Z liubo $
 */
+//echo str_replace('/admin/includes','/includes',str_replace('\\', '/', dirname(__FILE__))) . '/safety.php' ;exit;
 require_once(str_replace('/admin/includes','/includes',str_replace('\\', '/', dirname(__FILE__))) . '/safety.php');
 if (!defined('IN_ECS'))
 {
@@ -44,8 +45,10 @@ else
     @ini_set('include_path',      '.:' . ROOT_PATH);
 }
 
+
 if (file_exists('../data/config.php'))
 {
+
     include('../data/config.php');
 }
 else
@@ -387,8 +390,10 @@ include_once(ROOT_PATH."includes/cls_certificate.php");
 $cert = new certificate();
 $certificate = $cert->get_shop_certificate();
 if(!$certificate['certificate_id']){
+    // echo $ecs->url()."admin/certificate.php?act=get_certificate&type=index"; exit;
     $callback = $ecs->url()."admin/certificate.php?act=get_certificate&type=index";
     $iframe_url = $cert->get_authorize_url($callback);
+    // echo $iframe_url ;exit;
     $smarty->assign('iframe_url',$iframe_url);
 }
 $smarty->assign('certi',$certificate);

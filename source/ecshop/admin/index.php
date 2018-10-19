@@ -13,8 +13,10 @@
 */
 
 define('IN_ECS', true);
+// echo dirname(__FILE__) . '/includes/init.php' ;exit;
 
 require(dirname(__FILE__) . '/includes/init.php');
+
 require_once(ROOT_PATH . '/includes/lib_order.php');
 /*------------------------------------------------------ */
 //-- 框架
@@ -58,18 +60,10 @@ elseif ($_REQUEST['act'] == 'top')
     $smarty->assign('send_mail_on',$_CFG['send_mail_on']);
     $smarty->assign('nav_list', $lst);
     $smarty->assign('admin_id', $_SESSION['admin_id']);
-    if($certificate['certificate_id']){
-        $single_page = 'active';
-        $certificate['use_yunqi_authority'] and $single_page = 'detail';
-        $authority_url = $cert->get_authority_url($single_page);
-        $single_url = $cert->get_authority_url('single');
-        $smarty->assign('authority_url',$authority_url);
-        $smarty->assign('single_url',$single_url);
-        $smarty->assign('authorization',$_SESSION['authorization']);//是否授权
-        $smarty->assign('authorize_name',$_SESSION['authorize_name']);//授权名称
-    }
+    
+   
     $smarty->assign('http_host',$_SERVER['HTTP_HOST']);
-    $smarty->assign('yunqi_login',$_SESSION['yunqi_login']);
+    // $smarty->assign('yunqi_login',$_SESSION['yunqi_login']);
     $smarty->assign('certi', $certificate);
     $smarty->display('top.htm');
 }
@@ -101,6 +95,7 @@ elseif ($_REQUEST['act'] == 'menu')
 
     foreach ($modules AS $key => $val)
     {
+
         $menus[$key]['label'] = $_LANG[$key];
         if (is_array($val))
         {
@@ -149,7 +144,7 @@ elseif ($_REQUEST['act'] == 'menu')
         }
 
     }
-
+    // print_r($menus) ;exit;
     $smarty->assign('menus',     $menus);
     $smarty->assign('no_help',   $_LANG['no_help']);
     $smarty->assign('help_lang', $_CFG['lang']);
